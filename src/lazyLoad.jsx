@@ -3,7 +3,7 @@ import { wait } from "./components/global";
 
 export const lazyLoad = (path, namedImport) => {
   const Component = lazy(() => {
-    let promise = wait(600).then(() => import(path /* @vite-ignore */));
+    let promise = import(path /* @vite-ignore */);
     if (namedImport != null) {
       return promise.then((module) => {
         return { default: module[namedImport] };

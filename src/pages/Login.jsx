@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppState } from "../state";
 
-export const Login = () => {
+export default function Login() {
   const { loggedIn, login } = useAppState();
   const navigate = useNavigate();
 
@@ -45,4 +45,4 @@ export const Login = () => {
       )}
     </div>
   );
-};
+}

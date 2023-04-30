@@ -1,4 +1,4 @@
-export const Profile = () => {
+export default function Profile() {
   return (
     <div id='profile' className='px-4'>
       <div className='grid place-content-center p-3'>
@@ -37,4 +37,4 @@ export const Profile = () => {
       </div>
     </div>
   );
-};
+}

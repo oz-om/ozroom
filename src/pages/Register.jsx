@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export const Register = () => {
+export default function Register() {
   return (
     <div id='register-container' className='grid place-content-center pt-32'>
       <div id='register' className='rounded-xl bg-indigo-600/25 px-10 py-2'>
@@ -34,4 +34,4 @@ export const Register = () => {
       </div>
     </div>
   );
-};
+}

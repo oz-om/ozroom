@@ -5,7 +5,7 @@ import { SearchBar } from "../components/home/SearchBar";
 import { SideToggle } from "../components/home/SideToggle";
 import { useAppState } from "../state";
 
-export const Home = () => {
+export default function Home() {
   const { loggedIn } = useAppState();
   const navigate = useNavigate();
   const location = useLocation();
@@ -37,4 +37,4 @@ export const Home = () => {
       )}
     </section>
   );
-};
+}

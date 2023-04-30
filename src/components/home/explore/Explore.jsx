@@ -1,9 +1,12 @@
-import { memo } from "react";
+import { memo, lazy } from "react";
 import { TitlesBar } from "./TitlesBar";
 import { Room } from "./Room";
-import { lazyLoad } from "../../../lazyLoad";
-const Pagination = lazyLoad("./components/home/explore/Pagination", "Pagination");
 
+const Pagination = lazy(() =>
+  import("../explore/Pagination").then((module) => {
+    return { default: module.Pagination };
+  }),
+);
 export const Explore = memo(({ rooms }) => {
   return (
     <div id='explore'>

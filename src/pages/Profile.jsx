@@ -1,6 +1,6 @@
 export default function Profile() {
   return (
-    <div id='profile' className='px-4'>
+    <div id='profile' className='px-4 h-[calc(100vh_-_70px)]'>
       <div className='grid place-content-center p-3'>
         <img src='https://avatars.dicebear.com/api/bottts/ro.svg?background=%23A3D521' alt='photo profile' className='w-36 h-36 border-4 border-indigo-50 rounded-full' />
         <div id='change'>

@@ -5,7 +5,7 @@ import { wait } from "../components/global";
 export const context = createContext();
 
 const appState = {
-  loggedIn: false,
+  loggedIn: true,
   rooms: [],
   myRooms: [],
 };

@@ -26,10 +26,10 @@ export const Room = ({ id, roomName, roomAvatar, topic, desc, isPrivate, max }) 
         </div>
         <div id='controls'>
           <div className='flex flex-wrap gap-x-4'>
-            <div id='revive' className='flex grow items-center justify-center gap-x-1 bg-green-600 pl-1 pr-4 py-1 rounded-md cursor-pointer hover:bg-green-500'>
+            <Link to={`/live?room=${id}`} id='revive' className='flex grow items-center justify-center gap-x-1 bg-green-600 pl-1 pr-4 py-1 rounded-md cursor-pointer hover:bg-green-500'>
               <i className='bx bxs-leaf'></i>
               <span>revive</span>
-            </div>
+            </Link>
             <Link to={`edit?room=${id}`} id='edit' className='flex grow items-center justify-center gap-x-1 bg-sky-500 pl-1 pr-4 py-1 rounded-md cursor-pointer hover:bg-sky-700'>
               <i className='bx bx-cog'></i>
               <span>edit</span>

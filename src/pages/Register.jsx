@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export default function Register() {
   return (
-    <div id='register-container' className='grid place-content-center pt-32'>
+    <div id='register-container' className='grid place-content-center pt-32 h-[calc(100vh_-_70px)]'>
       <div id='register' className='rounded-xl bg-indigo-600/25 px-10 py-2'>
         <div id='head' className='grid place-content-center py-4'>
           <i className='bx bxs-analyse text-6xl mx-auto mb-3 text-indigo-400'></i>

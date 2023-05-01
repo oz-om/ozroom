@@ -4,22 +4,21 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { randomKey, copyKey } from "../../global";
 
-export const EditRoom = () => {
+export default function EditRoom() {
   const location = useLocation();
   const navigate = useNavigate();
   const { myRooms } = useAppState();
 
-  const queryParams = new URLSearchParams(location.search);
-  const roomId = queryParams.get("room");
+  const roomId = location.search.split("=")[1];
   const room = myRooms.find((room) => room.id === +roomId);
 
   const [updateRoom, setUpdateRoom] = useState({ ...room });
 
   useEffect(() => {
-    if (!room) {
+    if (!roomId) {
       navigate("/rooms");
     }
-  }, []);
+  }, [roomId]);
 
   function imagePreview(e) {
     let img = document.querySelector("#cover img");
@@ -158,4 +157,4 @@ export const EditRoom = () => {
       </div>
     </div>
   );
-};
+}

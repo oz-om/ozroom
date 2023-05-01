@@ -1,9 +1,10 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAppState } from "../../state";
 export const Navbar = () => {
   const { loggedIn, logout } = useAppState();
+  const location = useLocation();
   const navigate = useNavigate();
-
   function toggleMenu() {
     document.getElementById("menu").classList.toggle("hidden");
   }
@@ -11,8 +12,14 @@ export const Navbar = () => {
     logout();
     navigate("/login");
   }
+  useEffect(() => {
+    if (location.pathname === "/live") {
+      document.getElementById("appNavBar").classList.add("hidden");
+    }
+    return () => document.getElementById("appNavBar").classList.remove("hidden");
+  }, [location]);
   return (
-    <nav id='nav' className='flex justify-between shadow border-b-[1px] border-b-white/2 mb-2'>
+    <nav id='appNavBar' className='flex justify-between shadow border-b-[1px] border-b-white/2 mb-2'>
       <div id='logo' className='w-36'>
         <Link to={"/explore"}>
           <img src='https://svgshare.com/i/m9r.svg' alt='logo' />

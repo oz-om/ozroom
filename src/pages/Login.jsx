@@ -16,7 +16,7 @@ export default function Login() {
     login();
   }
   return (
-    <div id='login-container' className='grid place-content-center py-32'>
+    <div id='login-container' className='grid place-content-center py-32 h-[calc(100vh_-_70px)]'>
       {!loggedIn && (
         <div id='login' className='rounded-xl bg-indigo-600/25 px-10 py-2'>
           <div id='head' className='grid place-content-center py-4'>

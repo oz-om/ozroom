@@ -7,8 +7,11 @@
     font-family: "Nunito", sans-serif;
     font-weight: 700;
   }
+
   * {
     box-sizing: border-box;
+    scroll-behavior: smooth;
+    scroll-snap-type: mandatory;
   }
   :root {
     --primary: #64748b29;
@@ -86,21 +89,12 @@
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
 
-  /* #edit-container section#room-details {
-    @apply grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(3, 1fr);
+  .mirror_full_screen {
+    @apply absolute h-full rounded-3xl after:content-[''] after:absolute after:w-full after:h-1/3  after:left-0 after:bottom-0 after:bg-gradient-to-t after:from-black after:via-black/50 to-transparent;
   }
-  #edit-container section#room-details #general {
-    grid-row: 1/3;
+  .mirror_small_square {
+    @apply relative w-24 h-24 rounded-md border basis-28 z-[1];
   }
-  */
-  /* #edit-container section#room-details #topic {
-    grid-row: 1/2;
-  }
-  #edit-container section#room-details #desc {
-    grid-row: 2/3;
-  }  */
 }
 
 .no-scrollbar::-webkit-scrollbar {

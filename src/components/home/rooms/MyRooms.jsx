@@ -2,7 +2,7 @@ import { getCreateRoomBlock } from "../../global";
 import { Room } from "./Room";
 import { NewRoom } from "./NewRoom";
 
-export const MyRooms = ({ myRooms }) => {
+export default function MyRooms({ myRooms }) {
   return (
     <div id='rooms'>
       <div className='myRooms-container grid auto-fill gap-2 max-h-[calc(100vh_-_160px)] overflow-hidden overflow-y-auto'>
@@ -17,4 +17,4 @@ export const MyRooms = ({ myRooms }) => {
       <NewRoom />
     </div>
   );
-};
+}

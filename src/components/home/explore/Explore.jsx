@@ -7,7 +7,7 @@ const Pagination = lazy(() =>
     return { default: module.Pagination };
   }),
 );
-export const Explore = memo(({ rooms }) => {
+function Explore({ rooms }) {
   return (
     <div id='explore'>
       <TitlesBar />
@@ -20,4 +20,6 @@ export const Explore = memo(({ rooms }) => {
       {rooms.length > 6 && <Pagination />}
     </div>
   );
-});
+}
+
+export default memo(Explore);

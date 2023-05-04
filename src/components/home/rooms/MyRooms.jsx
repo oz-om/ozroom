@@ -5,7 +5,7 @@ import { NewRoom } from "./NewRoom";
 export default function MyRooms({ myRooms }) {
   return (
     <div id='rooms'>
-      <div className='myRooms-container grid auto-fill gap-2 max-h-[calc(100vh_-_160px)] overflow-hidden overflow-y-auto'>
+      <div className='myRooms-container flex justify-center flex-wrap gap-2 max-h-[calc(100vh_-_160px)] overflow-hidden overflow-y-auto'>
         {myRooms.map((room) => {
           const { id, cover, name, topic, desc, isPrivate, max } = room;
           return <Room key={id} id={id} roomAvatar={cover} roomName={name} topic={topic} desc={desc} isPrivate={isPrivate} max={max} />;

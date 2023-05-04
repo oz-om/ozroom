@@ -21,10 +21,10 @@ export default function Home() {
   }, [loggedIn]);
 
   return (
-    <section className='grid lg:grid-cols-[1fr_auto] min-h-[calc(100vh_-_70px)] relative'>
+    <section className='min-h-[calc(100vh_-_70px)]'>
       {loggedIn && (
         <>
-          <div className='relative'>
+          <div className=' wrapper grid'>
             {(location.pathname === "/rooms" || location.pathname === "/explore") && (
               <>
                 <SideToggle />

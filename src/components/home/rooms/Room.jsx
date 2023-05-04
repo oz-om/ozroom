@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export const Room = ({ id, roomName, roomAvatar, topic, desc, isPrivate, max }) => {
   return (
-    <div id='room' className='px-5 py-2 rounded-lg basis-1/3 grid content-between'>
+    <div id='room' className='px-5 py-2 rounded-lg grid content-between flex-grow max-w-xs '>
       <div id='my-room-cover' className='my-1 relative pt-4 group'>
         <div className='w-28 h-28 overflow-hidden ms-auto me-auto'>
           <img src={roomAvatar} alt='room cover' className='rounded-full object-cover h-full' />

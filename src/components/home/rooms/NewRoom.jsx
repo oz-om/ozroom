@@ -99,7 +99,7 @@ export const NewRoom = () => {
   }
 
   return (
-    <div id='create-container' className='hidden absolute w-full h-full top-0 backdrop-blur-md justify-center overflow-y-auto pl-2 overflow-hidden bg-black/25'>
+    <div id='create-container' className='hidden absolute w-full h-full top-0 left-0 backdrop-blur-md justify-center overflow-y-auto pl-2 overflow-hidden bg-black/25'>
       <div id='close' onClick={close} className='absolute top-2 right-2 z-[1]'>
         <i className='bx bx-x-circle text-2xl text-teal-400 cursor-pointer'></i>
       </div>

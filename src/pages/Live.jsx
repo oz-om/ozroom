@@ -27,7 +27,7 @@ export default function Live() {
       <div className='wrapper relative '>
         <Meeting />
 
-        <div className='chat-container absolute top-0 left-0 z-[1] backdrop-blur-[70px] bg-violet-950 bg-opacity-50'>
+        <div className='chat-container absolute top-0 left-0 z-[1] backdrop-blur-[70px] bg-violet-950 bg-opacity-50 max-w-3xl'>
           <div onClick={toggleChat} className='chat-icon-wrap cursor-pointer flex items-center px-2'>
             <span className='text-blue-400'>C</span>
             <span>hat</span>

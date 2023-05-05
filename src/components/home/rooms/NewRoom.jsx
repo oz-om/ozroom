@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAppState } from "../../../state";
-import { copyKey, getCreateRoomBlock, randomKey } from "../../global";
+import { copyKey, getCreateRoomBlock, randomKey, textAreaAutoResize } from "../../global";
 
 export const NewRoom = () => {
   const [room, setRoom] = useState({
@@ -59,10 +59,7 @@ export const NewRoom = () => {
       setRoom((prev) => ({ ...prev, key }));
     }
   }
-  function descAutoResize(e) {
-    e.target.style.height = "auto";
-    e.target.style.height = e.target.scrollHeight + "px";
-  }
+
   function createRoom() {
     setRoom((prev) => ({ ...prev, id: new Date().getTime() }));
     if (room.name.trim().length && room.topic.trim().length && room.desc.trim().length) {
@@ -175,7 +172,7 @@ export const NewRoom = () => {
             value={room.desc}
             placeholder='insert description'
             onInput={(e) => {
-              descAutoResize(e);
+              textAreaAutoResize(e);
               handelInputs(e);
             }}
             className='resize-none input no-scrollbar w-10/12'

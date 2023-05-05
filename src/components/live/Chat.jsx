@@ -2,6 +2,7 @@ import ava_1 from "../../assets/images/ava_1.png";
 import ava_2 from "../../assets/images/ava_2.png";
 import ava_3 from "../../assets/images/ava_3.png";
 import ava_4 from "../../assets/images/ava_4.png";
+import { textAreaAutoResize } from "../global/index";
 
 function Member({ avatar, name, active }) {
   return (
@@ -71,11 +72,11 @@ export default function Chat({ toggleChat }) {
             <Message avatar={ava_2} name={"Alex Nae"} message={"I'm fine, thanks!"} time={"12:01"} />
             <Message avatar={ava_3} name={"Adam Louise"} message={"Hello, how are you?. I'm fine, thanks!"} time={"12:02"} />
           </div>
-          <div className='chat-content__input flex items-end absolute w-full bottom-0 bg-violet-900 py-2'>
-            <textarea type='text' placeholder='Type a message' className='w-full h-full bg-transparent outline-none resize-none border font-mono border-gray-100/50 rounded-md no-scrollbar py-1 px-2' rows={1} />
+          <div className='chat-content__input flex items-end absolute w-full bottom-0 bg-violet-900 py-2 gap-x-1 px-1'>
+            <textarea type='text' onInput={textAreaAutoResize} placeholder='Type a message' className='w-full h-full max-h-32 bg-transparent outline-none resize-none border font-mono border-gray-100/50 rounded-md no-scrollbar py-1 px-2' rows={1} />
             <div className='chat-content__elements flex'>
-              <i className='bx bx-paperclip text-2xl text-blue-500/50'></i>
-              <i className='bx bx-send text-2xl text-green-500/50'></i>
+              <i className='bx bx-paperclip text-2xl text-blue-500/50 cursor-pointer'></i>
+              <i className='bx bx-send text-2xl text-green-500/50 cursor-pointer'></i>
             </div>
           </div>
         </div>

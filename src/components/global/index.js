@@ -23,6 +23,10 @@ export function copyKey(e) {
   document.execCommand("copy");
 }
 
+export function textAreaAutoResize(e) {
+  e.target.style.height = "auto";
+  e.target.style.height = e.target.scrollHeight + "px";
+}
 // simulate slow connection
 export function wait(time) {
   return new Promise((resolve) => {

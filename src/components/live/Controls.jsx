@@ -18,9 +18,9 @@ function RequestItem({ avatar, name, time, state }) {
       </div>
       <div className='request__item__actions flex items-center justify-center gap-x-1'>
         <button className='accept grid place-content-center bg-green-500/50 w-full h-2/4 rounded-md cursor-pointer'>
-          <i class='bx bxs-plug text-green-300'></i>
+          <i className='bx bxs-plug text-green-300'></i>
         </button>
-        <button className='reject grid place-content-center bg-red-500/50 w-full h-2/4 rounded-md cursor-pointer'>
+        <button className='reject grid place-content-center bg-red-500/50 w-full h-2/4 rounded-md cursor-pointer overflow-hidden'>
           <i className='bx bx-x text-2xl text-red-300'></i>
         </button>
       </div>
@@ -38,7 +38,7 @@ function RoomMemberItem({ avatar, name }) {
       </div>
       <div className='room_controls__members_item__actions flex justify-center gap-x-1'>
         <div className='mute flex flex-col items-center justify-between w-full cursor-pointer bg-sky-500/30 text-sky-300 rounded-md py-1'>
-          <i class='bx bxs-microphone-alt text-xl'></i>
+          <i className='bx bxs-microphone-alt text-xl'></i>
           <span className='text-xs font-light'>mute</span>
         </div>
         <div className='kick flex flex-col items-center justify-between w-full cursor-pointer bg-red-500/30 text-red-500 rounded-md py-1'>

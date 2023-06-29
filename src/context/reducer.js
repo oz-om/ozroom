@@ -70,6 +70,8 @@ export default function reducer(state, { type, payload }) {
     case "removeRequest":
       let updateRequests = handelRequests({ requests: state.requests, members: state.members, PeersId: state.PeersId }, payload);
       return { ...state, ...updateRequests };
+    case "setCall":
+      return { ...state, call: payload };
     case "pushStreams":
       return { ...state, streams: [...state.streams, ...payload] };
     default:

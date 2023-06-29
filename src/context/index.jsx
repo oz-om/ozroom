@@ -20,6 +20,7 @@ export const StateProvider = ({ children }) => {
     requests: [],
     members: [],
     PeersId: [],
+    call: null,
   };
   const [state, dispatch] = useReducer(reducer, appState);
   useEffect(() => {
@@ -28,10 +29,14 @@ export const StateProvider = ({ children }) => {
       Peer.on("open", (myPeerId) => {
         dispatch({ type: "setPeersId", payload: myPeerId });
       });
+      Peer.on("call", (call) => {
+        console.log("receive call state");
+        dispatch({ type: "setCall", payload: call });
+      });
     }
   }, [state.user.id]);
 
-  const methods = {};
+  // const methods = {};
 
   return <context.Provider value={{ ...state, dispatch, socket, Peer }}>{children}</context.Provider>;
 };

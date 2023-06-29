@@ -6,7 +6,7 @@ let apiKey = process.env.VITE_API_KEY;
 
 export default function Meeting({ roomID, ownerID }) {
   const navigate = useNavigate();
-  let { user, dispatch, streams, socket, Peer } = useAppState();
+  let { user, dispatch, streams, socket, Peer, call } = useAppState();
   const [myStream, setMyStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
   const [pushStream, setPushStream] = useState(true);
@@ -26,16 +26,14 @@ export default function Meeting({ roomID, ownerID }) {
   }, []);
 
   useEffect(() => {
-    if (myStream) {
-      Peer.on("call", (call) => {
-        console.log("receive call");
-        call.answer(myStream);
-        call.on("stream", (remoteStream) => {
-          setRemoteStream(remoteStream);
-        });
+    if (myStream && call) {
+      call.answer(myStream);
+      call.on("stream", (remoteStream) => {
+        setRemoteStream(remoteStream);
+        dispatch({ type: "setCall", payload: null });
       });
     }
-  }, [myStream]);
+  }, [myStream, call]);
 
   useEffect(() => {
     if (remoteStream && pushStream) {

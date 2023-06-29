@@ -6,7 +6,7 @@ let apiKey = process.env.VITE_API_KEY;
 
 export default function Meeting({ roomID, ownerID }) {
   const navigate = useNavigate();
-  const { user, dispatch, streams, socket, Peer, remotePeersId } = useAppState();
+  const { user, dispatch, streams, socket, Peer, remotePeersId, call } = useAppState();
   const [myStream, setMyStream] = useState(null);
 
   const [remoteStream, setRemoteStream] = useState(null);
@@ -20,13 +20,6 @@ export default function Meeting({ roomID, ownerID }) {
       })
       .then((myStream) => {
         setMyStream(myStream);
-        Peer.on("call", (call) => {
-          console.log("receive call");
-          call.answer(myStream);
-          call.on("stream", (remoteStream) => {
-            setRemoteStream(remoteStream);
-          });
-        });
       })
       .catch((err) => {
         console.log(err);
@@ -35,7 +28,7 @@ export default function Meeting({ roomID, ownerID }) {
 
   useEffect(() => {
     if (myStream && remotePeersId.length) {
-      remotePeersId.forEach((remotePeerId) => {
+      remotePeersId.reverse().forEach((remotePeerId) => {
         let call = Peer.call(remotePeerId, myStream);
         let callInter;
         if (!Peer.open) {
@@ -65,6 +58,16 @@ export default function Meeting({ roomID, ownerID }) {
       setPushStream(true);
     }
   }, [remoteStream, pushStream]);
+
+  useEffect(() => {
+    if (myStream && call) {
+      call.answer(myStream);
+      call.on("stream", (remoteStream) => {
+        setRemoteStream(remoteStream);
+        dispatch({ type: "setCall", payload: null });
+      });
+    }
+  }, [call]);
 
   async function meetingKill() {
     await myStream.getTracks().forEach(function (track) {

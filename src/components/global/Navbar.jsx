@@ -1,19 +1,28 @@
 import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAppState } from "../../state";
+import { useAppState } from "../../context";
 export const Navbar = () => {
-  const { loggedIn, logout } = useAppState();
+  const { loggedIn, dispatch } = useAppState();
   const location = useLocation();
   const navigate = useNavigate();
   function toggleMenu() {
     document.getElementById("menu").classList.toggle("hidden");
   }
-  function authLogout() {
-    logout();
-    navigate("/login");
+  async function authLogout() {
+    let apiKey = process.env.VITE_API_KEY;
+    let req = await fetch(`${apiKey}/logout`, {
+      credentials: "include",
+    });
+    let res = await req.json();
+    if (res.logout) {
+      dispatch({ type: "logout" });
+      navigate("/login");
+    } else {
+      console.log("error");
+    }
   }
   useEffect(() => {
-    if (location.pathname === "/live") {
+    if (location.pathname === "/live" || location.pathname === "/meeting") {
       document.getElementById("appNavBar").classList.add("hidden");
     }
     return () => document.getElementById("appNavBar").classList.remove("hidden");

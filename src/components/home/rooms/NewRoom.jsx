@@ -1,19 +1,19 @@
 import { useState } from "react";
-import { useAppState } from "../../../state";
-import { copyKey, getCreateRoomBlock, randomKey, textAreaAutoResize } from "../../global";
+import { useAppState } from "../../../context";
+import { copyKey, getCreateRoomBlock, randomKey, textAreaAutoResize, uploadGetNewUrl } from "../../global";
+let apiKey = process.env.VITE_API_KEY;
 
 export const NewRoom = () => {
   const [room, setRoom] = useState({
-    id: new Date().getTime(),
     name: "",
-    cover: "https://avatars.dicebear.com/api/bottts/ele.svg?background=%23425ACC",
+    avatar: "https://avatars.dicebear.com/api/bottts/ele.svg?background=%23425ACC",
     max: 2,
     isPrivate: false,
-    key: null,
+    private_key: null,
     topic: "",
-    desc: "",
+    description: "",
   });
-  const { addNewRoom } = useAppState();
+  const { dispatch } = useAppState();
 
   function imagePreview(e) {
     let img = document.querySelector("#cover img");
@@ -21,8 +21,12 @@ export const NewRoom = () => {
     reader.readAsDataURL(e.target.files[0]);
     reader.onload = () => {
       img.src = reader.result;
+      uploadGetNewUrl(img).then((newURL) => {
+        setRoom((prev) => ({ ...prev, avatar: newURL }));
+      });
     };
   }
+
   function handelInputs(e) {
     setRoom((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
@@ -53,31 +57,39 @@ export const NewRoom = () => {
     let current = e.target.previousSibling;
     setRoom((prev) => ({ ...prev, isPrivate: stat[current.id] }));
     toggle(e);
-
     if (stat[current.id]) {
-      let key = randomKey();
-      setRoom((prev) => ({ ...prev, key }));
+      let private_key = randomKey();
+      setRoom((prev) => ({ ...prev, private_key }));
     }
   }
 
-  function createRoom() {
-    setRoom((prev) => ({ ...prev, id: new Date().getTime() }));
-    if (room.name.trim().length && room.topic.trim().length && room.desc.trim().length) {
-      addNewRoom(room);
-      close();
+  async function createRoom() {
+    if (room.name.trim().length && room.topic.trim().length && room.description.trim().length) {
+      let req = await fetch(`${apiKey}/create_room`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(room),
+        credentials: "include",
+      });
+      let res = await req.json();
+      if (res.createRoom) {
+        dispatch({ type: "addNewRoom", payload: { ...room, id: res.roomId } });
+        close();
+      }
     }
   }
   function close() {
     // reset room
     setRoom({
-      id: new Date().getTime(),
       name: "",
-      cover: "https://avatars.dicebear.com/api/bottts/ele.svg?background=%23425ACC",
+      avatar: "https://avatars.dicebear.com/api/bottts/ele.svg?background=%23425ACC",
       max: 2,
       isPrivate: false,
-      key: null,
+      private_key: null,
       topic: "",
-      desc: "",
+      description: "",
     });
     // reset max member choices and state choices
     let statesChoices = document.querySelectorAll("#room-state input");
@@ -102,7 +114,7 @@ export const NewRoom = () => {
       </div>
       <div id='create' className='backdrop-blur-md bg-indigo-800/50 px-3 mt-2 rounded-md shadow shadow-sky-50/50 h-full max-w-sm min-w-[343.41px]'>
         <div id='cover' className='relative'>
-          <img src={room.cover} alt='cover' className='w-28 h-28 rounded-full mx-auto border object-cover' />
+          <img src={room.avatar} alt='cover' className='w-28 h-28 rounded-full mx-auto border object-cover' />
           <label htmlFor='upPhoto' className='w-28 h-28 cursor-pointer rounded-full mx-auto border flex justify-center items-center absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2'>
             <i className='bx bxs-camera-plus text-2xl'></i>
           </label>
@@ -155,7 +167,7 @@ export const NewRoom = () => {
         {room.isPrivate && (
           <div id='Key' className='flex items-center gap-x-3'>
             <h4 className='whitespace-nowrap'>private Key:</h4>
-            <input type='text' id='privatekey' readOnly value={room.key} className='w-36 bg-transparent px-3 py-1 rounded-md bg-indigo-700' />
+            <input type='text' id='privatekey' readOnly value={room.private_key} className='w-36 bg-transparent px-3 py-1 rounded-md bg-indigo-700' />
             <button onClick={copyKey} className='bg-violet-500 block p-1 text-sm font-light w-16 rounded-xl cursor-pointer'>
               copy
             </button>
@@ -168,8 +180,8 @@ export const NewRoom = () => {
         <div id='desc' className=''>
           <h4>description:</h4>
           <textarea
-            name='desc'
-            value={room.desc}
+            name='description'
+            value={room.description}
             placeholder='insert description'
             onInput={(e) => {
               textAreaAutoResize(e);

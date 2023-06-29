@@ -1,4 +1,7 @@
+import { useAppState } from "../context";
+
 export default function Profile() {
+  const { user } = useAppState();
   return (
     <div id='profile' className='px-4 h-[calc(100vh_-_70px)]'>
       <div className='grid place-content-center p-3'>
@@ -14,11 +17,11 @@ export default function Profile() {
         <div id='user-info' className='mb-4 rounded-md p-4 min-h-[215px] bg-indigo-700/25'>
           <div id='name'>
             <p className='text-white/70'>full name:</p>
-            <span>Adnane aberahim</span>
+            <span>{user.username}</span>
           </div>
           <div id='email'>
             <p className='text-white/70'>email:</p>
-            <span>Adnane_aberahim@mail.com</span>
+            <span>{user.email}</span>
           </div>
         </div>
         <div id='reset-pass' className='rounded-md p-4 min-h-[215px] bg-indigo-700/25'>

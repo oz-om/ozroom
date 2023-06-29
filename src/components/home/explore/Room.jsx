@@ -1,4 +1,49 @@
-export const Room = ({ roomName, roomAvatar, isPrivate, count, max }) => {
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAppState } from "../../../context";
+
+let apiKey = process.env.VITE_API_KEY;
+
+export const Room = ({ roomID, roomName, roomAvatar, isPrivate, count, max, ownerID }) => {
+  const { dispatch, user, PeersId, socket, Peer } = useAppState();
+  const navigate = useNavigate();
+  async function handleJoin() {
+    isRoomOnline().then((res) => {
+      if (!res.isOnline) {
+        return console.log(res.err);
+      }
+      const { id, username, avatar } = user;
+      socket.emit("requestPeerID", {
+        senderRequest: {
+          id,
+          username,
+          avatar,
+          time: "12:30",
+          state: "online",
+          senderPeerId: PeersId[0],
+        },
+        receiverRequest: ownerID,
+        targetRoom: roomID,
+      });
+      socket.on("approved", (roomPeersId) => {
+        dispatch({ type: "setRemotePsid", payload: roomPeersId });
+        navigate(`/meeting?in${roomID}`);
+      });
+    });
+  }
+
+  async function isRoomOnline() {
+    let req = await fetch(`${apiKey}/is_room_online`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id: roomID }),
+      credentials: "include",
+    });
+    return await req.json();
+  }
+
   return (
     <div id='room' className='grid grid-cols-[auto_1fr_1fr] gap-x-2 items-center justify-around p-1 rounded-lg max-h-28'>
       <div className='w-16 h-16 overflow-hidden my-1'>
@@ -17,7 +62,7 @@ export const Room = ({ roomName, roomAvatar, isPrivate, count, max }) => {
           <span className='text-xs text-gray-100/50 font-light md:hidden'>max</span>
           <p className='text-xl text-orange-400'>{max}</p>
         </div>
-        <div id='join' className='col-span-2 py-1 md:col-auto'>
+        <div id='join' onClick={handleJoin} className='col-span-2 py-1 md:col-auto'>
           <button className='bg-violet-500 block p-2 w-6/12 mx-auto rounded-xl cursor-pointer hover:bg-violet-400'>join</button>
         </div>
       </div>

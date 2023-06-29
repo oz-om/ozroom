@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, memo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Rooms } from "../components/home/Rooms";
 import { SearchBar } from "../components/home/SearchBar";
 import { SideToggle } from "../components/home/SideToggle";
-import { useAppState } from "../state";
+import { useAppState } from "../context";
 
-export default function Home() {
+function Home() {
   const { loggedIn } = useAppState();
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,3 +38,5 @@ export default function Home() {
     </section>
   );
 }
+
+export default memo(Home);

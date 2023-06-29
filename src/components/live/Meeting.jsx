@@ -1,20 +1,84 @@
 import { Mirror } from "./Mirror";
-import video_1 from "../../assets/videos/video_1.mp4";
-import video_2 from "../../assets/videos/video_2.mp4";
-import video_3 from "../../assets/videos/video_3.mp4";
-import video_4 from "../../assets/videos/video_4.mp4";
-import video_5 from "../../assets/videos/video_5.mp4";
 import { useNavigate } from "react-router-dom";
-let streams = [video_2, video_3, video_4, video_5];
-export default function Meeting() {
+import { useAppState } from "../../context";
+import { useEffect, useState } from "react";
+let apiKey = process.env.VITE_API_KEY;
+
+export default function Meeting({ roomID, ownerID }) {
   const navigate = useNavigate();
+  let { user, dispatch, streams, socket, Peer } = useAppState();
+  const [myStream, setMyStream] = useState(null);
+  const [remoteStream, setRemoteStream] = useState(null);
+  const [pushStream, setPushStream] = useState(true);
+
+  useEffect(() => {
+    navigator.mediaDevices
+      .getUserMedia({
+        audio: true,
+        video: true,
+      })
+      .then((myStream) => {
+        setMyStream(myStream);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (myStream) {
+      Peer.on("call", (call) => {
+        console.log("receive call");
+        call.answer(myStream);
+        call.on("stream", (remoteStream) => {
+          setRemoteStream(remoteStream);
+        });
+      });
+    }
+  }, [myStream]);
+
+  useEffect(() => {
+    if (remoteStream && pushStream) {
+      dispatch({ type: "pushStreams", payload: [remoteStream] });
+      setPushStream(false);
+      setRemoteStream(null);
+    } else {
+      setPushStream(true);
+    }
+  }, [remoteStream, pushStream]);
+
   function meetingKill() {
-    navigate("/explore");
+    closeStream()
+      .then((result) => {
+        if (!result?.killRoom) {
+          console.log(result);
+          return;
+        }
+        navigate("/rooms");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
+  async function closeStream() {
+    await myStream.getTracks().forEach(function (track) {
+      track.stop();
+    });
+    let req = await fetch(`${apiKey}/kill_room`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id: roomID }),
+      credentials: "include",
+    });
+    return await req.json();
+  }
+
   return (
     <div className='meeting-container relative h-full'>
       <div className='meeting relative bg-red-50/10s  w-full  flex items-end justify-center gap-x-2 h-[93vh] '>
-        <Mirror stream={video_1} isFullScreen={true} />
+        <Mirror isFullScreen={true} stream={myStream} />
         {streams.map((stream, i) => {
           return <Mirror key={i} stream={stream} isFullScreen={false} />;
         })}

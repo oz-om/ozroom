@@ -1,9 +1,13 @@
-import React from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 import Meeting from "../components/live/Meeting";
 import Chat from "../components/live/Chat";
 import Controls from "../components/live/Controls";
+import { useAppState } from "../context";
 
-export default function Live() {
+const Live = memo(() => {
+  let { current: params } = useRef(new URL(document.location).searchParams);
+  const { Peer } = useAppState();
+
   function toggleChat() {
     const chatContainer = document.querySelector(".chat-container");
     chatContainer.classList.toggle("h-full");
@@ -25,7 +29,7 @@ export default function Live() {
   return (
     <section className='live-wrapper h-screen bg-black/50'>
       <div className='wrapper relative '>
-        <Meeting />
+        <Meeting roomID={params.get("room")} ownerID={params.get("in")} />
 
         <div className='chat-container absolute top-0 left-0 z-[1] backdrop-blur-[70px] bg-violet-950 bg-opacity-50 max-w-3xl'>
           <div onClick={toggleChat} className='chat-icon-wrap cursor-pointer flex items-center px-2'>
@@ -49,4 +53,6 @@ export default function Live() {
       </div>
     </section>
   );
-}
+});
+
+export default Live;

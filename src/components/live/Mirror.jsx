@@ -1,4 +1,15 @@
-export function Mirror({ stream, isFullScreen }) {
+import { useEffect, useRef } from "react";
+
+export function Mirror({ isFullScreen, stream }) {
+  let currentVideo = useRef();
+
+  useEffect(() => {
+    if (stream) {
+      currentVideo.current.srcObject = stream;
+      currentVideo.current.play();
+    }
+  }, [stream]);
+
   function toggleFullScreen(e) {
     const mirrors = Array.from(document.querySelectorAll(".mirror"));
 
@@ -20,8 +31,8 @@ export function Mirror({ stream, isFullScreen }) {
         <i onClick={toggleFullScreen} className='bx bx-fullscreen'></i>
       </div>
       <div className='mirror-video absolute left-0 top-0 w-full h-full'>
-        <video autoPlay muted loop className='bg-blue-400/50 w-full h-full  object-cover'>
-          <source src={stream} type='video/mp4' />
+        <video autoPlay muted loop ref={currentVideo} className='bg-blue-400/50 w-full h-full  object-cover'>
+          <source type='video/mp4' />
         </video>
       </div>
     </div>

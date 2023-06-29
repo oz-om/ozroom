@@ -1,13 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
-import { useAppState } from "../../../state";
+import { useAppState } from "../../../context";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { randomKey, copyKey } from "../../global";
+import { randomKey, copyKey, uploadGetNewUrl } from "../../global";
+let apiKey = process.env.VITE_API_KEY;
 
 export default function EditRoom() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { myRooms } = useAppState();
+  const { myRooms, dispatch } = useAppState();
 
   const roomId = location.search.split("=")[1];
   const room = myRooms.find((room) => room.id === +roomId);
@@ -26,6 +27,9 @@ export default function EditRoom() {
     reader.readAsDataURL(e.target.files[0]);
     reader.onload = () => {
       img.src = reader.result;
+      uploadGetNewUrl(img).then((newURL) => {
+        setUpdateRoom((prev) => ({ ...prev, avatar: newURL }));
+      });
     };
   }
   function handelInputs(e) {
@@ -56,14 +60,28 @@ export default function EditRoom() {
       public: false,
     };
     if (stat[e.target.getAttribute("for")] && !updateRoom.key) {
-      let key = randomKey();
-      setUpdateRoom((prev) => ({ ...prev, key }));
+      let private_key = randomKey();
+      setUpdateRoom((prev) => ({ ...prev, private_key }));
     }
     setUpdateRoom((prev) => ({ ...prev, isPrivate: stat[e.target.getAttribute("for")] }));
     toggle(e);
   }
-  function updateRoomInfo(e) {
-    console.log(updateRoom);
+  async function updateRoomInfo(e) {
+    let req = await fetch(`${apiKey}/update_room`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updateRoom),
+      credentials: "include",
+    });
+    let res = await req.json();
+    if (res.updateRoom) {
+      dispatch({ type: "updateRoom", payload: updateRoom.id });
+      navigate("/rooms");
+    } else {
+      console.log(res);
+    }
   }
 
   return (
@@ -77,7 +95,7 @@ export default function EditRoom() {
       <section id='room-details' className='flex flex-col gap-4 max-w-3xl mx-auto sm:flex-row'>
         <div id='general' className='rounded-md bg-violet-500/20 py-7 px-3 grow'>
           <div id='cover' className='relative w-52 h-52 mx-auto'>
-            <img src={updateRoom.cover} alt='cover' className='w-full h-full rounded-full border object-cover' />
+            <img src={updateRoom.avatar} alt='cover' className='w-full h-full rounded-full border object-cover' />
             <label htmlFor='upPhoto' className='w-full h-full cursor-pointer rounded-full mx-auto border flex justify-center items-center absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2'>
               <i className='bx bxs-camera-plus text-2xl'></i>
             </label>
@@ -93,27 +111,29 @@ export default function EditRoom() {
             <h4 className="'text-sm text-gray-100/80 font-light mr-1'">status:</h4>
             <div id='room-state' className='flex gap-x-2'>
               <div className='basis-1/2'>
-                <input type='radio' id='public' className='peer hidden' defaultChecked />
+                <input type='radio' id='public' className='peer hidden' defaultChecked={+updateRoom.isPrivate ? false : true} />
                 <label htmlFor='public' onClick={updateRoomState} className='checkbox'>
                   public
                 </label>
               </div>
               <div className='basis-1/2'>
-                <input type='radio' id='private' className='peer hidden' />
+                <input type='radio' id='private' className='peer hidden' defaultChecked={+updateRoom.isPrivate ? true : false} />
                 <label htmlFor='private' onClick={updateRoomState} className='checkbox'>
                   private
                 </label>
               </div>
             </div>
           </div>
-          {updateRoom.isPrivate && (
+          {+updateRoom.isPrivate ? (
             <div id='Key' className='flex flex-wrap items-center gap-x-3 my-5'>
               <h4 className='whitespace-nowrap text-sm text-gray-100/80 font-light mr-1'>private Key:</h4>
-              <input type='text' id='privatekey' readOnly value={updateRoom.key} className='w-36 bg-transparent px-3 py-1 rounded-md bg-indigo-700' />
+              <input type='text' id='privatekey' readOnly value={updateRoom.private_key} className='w-36 bg-transparent px-3 py-1 rounded-md bg-indigo-700' />
               <button onClick={copyKey} className='bg-violet-500 block p-1 text-sm font-light w-16 rounded-xl cursor-pointer hover:bg-violet-600'>
                 copy
               </button>
             </div>
+          ) : (
+            ""
           )}
           <div id='insertMax' className=''>
             <h4>max members:</h4>
@@ -146,7 +166,7 @@ export default function EditRoom() {
           </div>
           <div id='desc' className='bg-violet-900/20 py-7 px-3 rounded-md'>
             <h4 className="'text-sm text-gray-100/80 font-light mr-1'">description:</h4>
-            <textarea name='desc' value={updateRoom.desc} placeholder='description...' onInput={handelInputs} className='resize-none input no-scrollbar w-full h-[95%]'></textarea>
+            <textarea name='description' value={updateRoom.description} placeholder='description...' onInput={handelInputs} className='resize-none input no-scrollbar w-full h-[95%]'></textarea>
           </div>
         </div>
       </section>

@@ -1,10 +1,14 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAppState } from "../state";
+import { useAppState } from "../context";
 
 export default function Login() {
-  const { loggedIn, login } = useAppState();
+  const { loggedIn, dispatch } = useAppState();
   const navigate = useNavigate();
+  const [user, setUserData] = useState({
+    user: "",
+    pass: "",
+  });
 
   useEffect(() => {
     if (loggedIn) {
@@ -12,9 +16,28 @@ export default function Login() {
     }
   }, [loggedIn]);
 
-  function authLogin() {
-    login();
+  function setInputs(input) {
+    let data = input.target;
+    setUserData((prev) => ({ ...prev, [data.name]: data.value }));
   }
+
+  async function authLogin() {
+    let apiKey = process.env.VITE_API_KEY;
+
+    let req = await fetch(`${apiKey}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(user),
+      credentials: "include",
+    });
+    let res = await req.json();
+    if (res.login) {
+      dispatch({ type: "login", payload: res.user });
+    }
+  }
+
   return (
     <div id='login-container' className='grid place-content-center py-32 h-[calc(100vh_-_70px)]'>
       {!loggedIn && (
@@ -24,12 +47,12 @@ export default function Login() {
           </div>
           <div id='inputs'>
             <div id='user'>
-              <label className=''>user name/email:</label>
-              <input type='text' name='user' placeholder='user name or email' className='input mb-4' />
+              <label>user name/email:</label>
+              <input type='text' name='user' onInput={setInputs} placeholder='user name or email' className='input mb-4' />
             </div>
             <div id='pass'>
-              <label className=''>password:</label>
-              <input type='password' name='pass' placeholder='password' className='input mb-4' />
+              <label>password:</label>
+              <input type='password' name='pass' onInput={setInputs} placeholder='password' className='input mb-4' />
             </div>
             <button onClick={authLogin} className='px-4 py-1 bg-violet-500 rounded-md w-28 mx-auto my-5 block'>
               login

@@ -1,9 +1,47 @@
-import ava_1 from "../../assets/images/ava_1.png";
-import ava_2 from "../../assets/images/ava_2.png";
-import ava_3 from "../../assets/images/ava_3.png";
-import ava_4 from "../../assets/images/ava_4.png";
+import { useEffect, useState } from "react";
+import { useAppState } from "../../context";
 
-function RequestItem({ avatar, name, time, state }) {
+export default function Controls() {
+  const { dispatch, socket, requests, members } = useAppState();
+  useEffect(() => {
+    socket.on("receiveRequestPeer", (requestInfo) => {
+      dispatch({ type: "pushRequest", payload: requestInfo.senderRequest });
+    });
+  }, []);
+
+  return (
+    <div className='controls-content__wrap'>
+      <div className='room_requests px-2'>
+        <h4 className='text-xs text-gray-100/50 font-light mb-2'>requests</h4>
+        <div className='requests__list'>
+          {requests.map((request) => {
+            let { id, avatar, senderPeerId, username, time, state } = request;
+            return <RequestItem key={id} id={id} PeerId={senderPeerId} avatar={avatar} name={username} time={time} state={state} />;
+          })}
+        </div>
+      </div>
+      <div className='room_controls px-2'>
+        <h4 className='text-xs text-gray-100/50 font-light mt-1 mb-2'>room manage</h4>
+        <div className='room_controls__members_list'>
+          {members.map((member) => {
+            const { id, avatar, username } = member;
+            return <RoomMemberItem key={id} avatar={avatar} name={username} />;
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RequestItem({ id, PeerId, avatar, name, time, state }) {
+  const { dispatch, socket, PeersId } = useAppState();
+  function handleAccept() {
+    if (id) {
+      socket.emit("approveRequest", { senderRequest: id, roomPeersId: PeersId });
+      console.log(PeersId, "sent to sender to call use");
+      dispatch({ type: "removeRequest", payload: { id, type: "approve", member: { id, PeerId, avatar, username: name } } });
+    }
+  }
   return (
     <div className='request__item grid grid-cols-[48px_1fr_1fr] gap-x-2 mb-2'>
       <div className='request__item__avatar w-12 h-12 rounded-full overflow-hidden'>
@@ -17,7 +55,7 @@ function RequestItem({ avatar, name, time, state }) {
         </div>
       </div>
       <div className='request__item__actions flex items-center justify-center gap-x-1'>
-        <button className='accept grid place-content-center bg-green-500/50 w-full h-2/4 rounded-md cursor-pointer'>
+        <button onClick={handleAccept} className='accept grid place-content-center bg-green-500/50 w-full h-2/4 rounded-md cursor-pointer'>
           <i className='bx bxs-plug text-green-300'></i>
         </button>
         <button className='reject grid place-content-center bg-red-500/50 w-full h-2/4 rounded-md cursor-pointer overflow-hidden'>
@@ -44,28 +82,6 @@ function RoomMemberItem({ avatar, name }) {
         <div className='kick flex flex-col items-center justify-between w-full cursor-pointer bg-red-500/30 text-red-500 rounded-md py-1'>
           <i className='iconoir-flash-off text-xl'></i>
           <span className='text-xs font-light'>kill</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-export default function Controls() {
-  return (
-    <div className='controls-content__wrap'>
-      <div className='room_requests px-2'>
-        <h4 className='text-xs text-gray-100/50 font-light mb-2'>requests</h4>
-        <div className='requests__list'>
-          <RequestItem avatar={ava_1} name={"alex Ming"} time={"12:02"} state={"online"} />
-          <RequestItem avatar={ava_4} name={"kuril melt"} time={"12:03"} state={"online"} />
-        </div>
-      </div>
-      <div className='room_controls px-2'>
-        <h4 className='text-xs text-gray-100/50 font-light mt-1 mb-2'>room manage</h4>
-        <div className='room_controls__members_list'>
-          <RoomMemberItem avatar={ava_1} name={"alex Ming"} />
-          <RoomMemberItem avatar={ava_2} name={"John luisa"} />
-          <RoomMemberItem avatar={ava_3} name={"Neil Bret"} />
-          <RoomMemberItem avatar={ava_4} name={"Kuril melt"} />
         </div>
       </div>
     </div>

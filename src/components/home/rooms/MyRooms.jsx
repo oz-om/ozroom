@@ -1,14 +1,25 @@
 import { getCreateRoomBlock } from "../../global";
 import { Room } from "./Room";
 import { NewRoom } from "./NewRoom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useAppState } from "../../../context";
+import { fetchMyRooms } from "../../../context/reducer";
 
-export default function MyRooms({ myRooms }) {
+export default function MyRooms() {
+  const { myRooms, dispatch } = useAppState();
+
+  useEffect(() => {
+    fetchMyRooms().then((myRoomsData) => {
+      dispatch({ type: "fetchMyRooms", payload: myRoomsData });
+    });
+  }, []);
+
   return (
     <div id='rooms'>
       <div className='myRooms-container flex justify-center flex-wrap gap-2 max-h-[calc(100vh_-_160px)] overflow-hidden overflow-y-auto'>
         {myRooms.map((room) => {
-          const { id, cover, name, topic, desc, isPrivate, max } = room;
-          return <Room key={id} id={id} roomAvatar={cover} roomName={name} topic={topic} desc={desc} isPrivate={isPrivate} max={max} />;
+          const { id, avatar, name, topic, description, isPrivate, max, owner_id } = room;
+          return <Room key={id} id={id} ownerID={owner_id} roomAvatar={avatar} roomName={name} topic={topic} desc={description} isPrivate={isPrivate} max={max} />;
         })}
       </div>
       <div id='add-room' onClick={getCreateRoomBlock} className='flex justify-end absolute bottom-4 right-0'>

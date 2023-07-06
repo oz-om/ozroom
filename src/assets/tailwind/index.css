@@ -90,7 +90,7 @@
   }
 
   .mirror_full_screen {
-    @apply absolute h-full rounded-3xl after:content-[''] after:absolute after:w-full after:h-1/3  after:left-0 after:bottom-0 after:bg-gradient-to-t after:from-black after:via-black/50 to-transparent;
+    @apply absolute h-full after:content-[''] after:absolute after:w-full after:h-1/3  after:left-0 after:bottom-0 after:bg-gradient-to-t after:from-black after:via-black/50 to-transparent;
   }
   .mirror_small_square {
     @apply relative w-24 h-24 rounded-md border basis-28 z-[1];

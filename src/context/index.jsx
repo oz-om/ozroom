@@ -14,24 +14,30 @@ export const StateProvider = ({ children }) => {
     user: {},
     rooms: [],
     myRooms: [],
-    streams: [],
-    role: "caller",
-    remotePeersId: [],
+    //
     requests: [],
     members: [],
-    PeersId: [],
-    call: null,
+    Peers: [],
+    call: null, //call that we receive
+    myStream: null,
+    calls: [], // calls that we make
+    controlledMembersFaces: [],
+    controlledMembersAudios: [],
   };
   const [state, dispatch] = useReducer(reducer, appState);
   useEffect(() => {
     socket.emit("initRoom", state.user.id);
     if (state.user.id) {
       Peer.on("open", (myPeerId) => {
-        dispatch({ type: "setPeersId", payload: myPeerId });
+        const { user } = state;
+        dispatch({ type: "setPeers", payload: [{ id: user.id, username: user.username, avatar: user.avatar, PeerId: myPeerId, socketId: socket.id }] });
       });
       Peer.on("call", (call) => {
         console.log("receive call state");
         dispatch({ type: "setCall", payload: call });
+      });
+      socket.on("room_initialized", () => {
+        console.log("initialized");
       });
     }
   }, [state.user.id]);

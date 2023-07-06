@@ -20,7 +20,7 @@ const Live = memo(() => {
 
   function toggleRoomMange() {
     const controlsContainer = document.querySelector(".controls-container");
-    controlsContainer.classList.toggle("w-72");
+    controlsContainer.classList.toggle("w-96");
 
     const controlsContent = document.querySelector(".controls-content__container");
     controlsContent.classList.toggle("hidden");

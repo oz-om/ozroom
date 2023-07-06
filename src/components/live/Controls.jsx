@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppState } from "../../context";
 
 export default function Controls() {
-  const { dispatch, socket, requests, members } = useAppState();
+  const { dispatch, socket, requests, Peers, members } = useAppState();
   useEffect(() => {
     socket.on("receiveRequestPeer", (requestInfo) => {
       dispatch({ type: "pushRequest", payload: requestInfo.senderRequest });
@@ -15,8 +15,8 @@ export default function Controls() {
         <h4 className='text-xs text-gray-100/50 font-light mb-2'>requests</h4>
         <div className='requests__list'>
           {requests.map((request) => {
-            let { id, avatar, senderPeerId, username, time, state } = request;
-            return <RequestItem key={id} id={id} PeerId={senderPeerId} avatar={avatar} name={username} time={time} state={state} />;
+            let { id, avatar, senderPeerId, senderSocketId, username, time, state } = request;
+            return <RequestItem key={id} id={id} PeerId={senderPeerId} socketId={senderSocketId} avatar={avatar} name={username} time={time} state={state} />;
           })}
         </div>
       </div>
@@ -24,8 +24,8 @@ export default function Controls() {
         <h4 className='text-xs text-gray-100/50 font-light mt-1 mb-2'>room manage</h4>
         <div className='room_controls__members_list'>
           {members.map((member) => {
-            const { id, avatar, username } = member;
-            return <RoomMemberItem key={id} avatar={avatar} name={username} />;
+            const { id, avatar, username, remoteStream } = member;
+            return <RoomMemberItem key={id} id={id} avatar={avatar} name={username} stream={remoteStream} />;
           })}
         </div>
       </div>
@@ -33,14 +33,12 @@ export default function Controls() {
   );
 }
 
-function RequestItem({ id, PeerId, avatar, name, time, state }) {
-  const { dispatch, socket, PeersId } = useAppState();
+function RequestItem({ id, PeerId, socketId, avatar, name, time, state }) {
+  const { dispatch, socket, Peers, user } = useAppState();
+
   function handleAccept() {
-    if (id) {
-      socket.emit("approveRequest", { senderRequest: id, roomPeersId: PeersId });
-      console.log(PeersId, "sent to sender to call use");
-      dispatch({ type: "removeRequest", payload: { id, type: "approve", member: { id, PeerId, avatar, username: name } } });
-    }
+    socket.emit("approveRequest", { senderRequest: id, socketId, roomPeers: Peers, accepter: user.id });
+    // dispatch({ type: "removeRequest", payload: { id, type: "approve", member: { id, PeerId, avatar, username: name, remoteStream: null } } });
   }
   return (
     <div className='request__item grid grid-cols-[48px_1fr_1fr] gap-x-2 mb-2'>
@@ -65,7 +63,21 @@ function RequestItem({ id, PeerId, avatar, name, time, state }) {
     </div>
   );
 }
-function RoomMemberItem({ avatar, name }) {
+
+function RoomMemberItem({ id, avatar, name, stream }) {
+  const { socket, user, members } = useAppState();
+  function controlAudio() {
+    stream.getAudioTracks()[0].enabled = !stream.getAudioTracks()[0].enabled;
+    members.forEach((member) => {
+      socket.emit("admin_control_audio_tracks", { member: member.socketId, targetUser: id, controlledByAdmin: !stream.getAudioTracks()[0].enabled });
+    });
+  }
+  function controlVideo() {
+    stream.getVideoTracks()[0].enabled = !stream.getVideoTracks()[0].enabled;
+    members.forEach((member) => {
+      socket.emit("admin_control_video_tracks", { member: member.socketId, targetUser: id, controlledByAdmin: !stream.getVideoTracks()[0].enabled });
+    });
+  }
   return (
     <div className='room_controls__members_item grid grid-cols-[48px_1fr_1fr] items-center gap-x-2 mb-2'>
       <div className='room_controls__members_item__avatar w-12 h-12 rounded-full overflow-hidden'>
@@ -75,9 +87,13 @@ function RoomMemberItem({ avatar, name }) {
         <h5 className='req_name'>{name}</h5>
       </div>
       <div className='room_controls__members_item__actions flex justify-center gap-x-1'>
-        <div className='mute flex flex-col items-center justify-between w-full cursor-pointer bg-sky-500/30 text-sky-300 rounded-md py-1'>
+        <div onClick={controlAudio} className='mute flex flex-col items-center justify-between w-full cursor-pointer bg-sky-500/30 text-sky-300 rounded-md py-1'>
           <i className='bx bxs-microphone-alt text-xl'></i>
           <span className='text-xs font-light'>mute</span>
+        </div>
+        <div onClick={controlVideo} className='mute flex flex-col items-center justify-between w-full cursor-pointer bg-sky-500/30 text-sky-300 rounded-md py-1'>
+          <i className='bx bxs-video text-xl'></i>
+          <span className='text-xs font-light'>face-on</span>
         </div>
         <div className='kick flex flex-col items-center justify-between w-full cursor-pointer bg-red-500/30 text-red-500 rounded-md py-1'>
           <i className='iconoir-flash-off text-xl'></i>

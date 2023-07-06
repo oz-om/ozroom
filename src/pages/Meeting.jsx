@@ -5,6 +5,7 @@ import Controls from "../components/meeting/Controls";
 
 const MeetingUi = memo(() => {
   let { current: params } = useRef(new URL(document.location).searchParams);
+
   function toggleChat() {
     const chatContainer = document.querySelector(".chat-container");
     chatContainer.classList.toggle("h-full");
@@ -17,7 +18,7 @@ const MeetingUi = memo(() => {
 
   function toggleRoomMange() {
     const controlsContainer = document.querySelector(".controls-container");
-    controlsContainer.classList.toggle("w-72");
+    controlsContainer.classList.toggle("w-96");
 
     const controlsContent = document.querySelector(".controls-content__container");
     controlsContent.classList.toggle("hidden");
@@ -26,7 +27,7 @@ const MeetingUi = memo(() => {
   return (
     <section className='live-wrapper h-screen bg-black/50'>
       <div className='wrapper relative '>
-        <Meeting roomID={params.get("room")} ownerID={params.get("in")} />
+        <Meeting />
 
         <div className='chat-container absolute top-0 left-0 z-[1] backdrop-blur-[70px] bg-violet-950 bg-opacity-50 max-w-3xl'>
           <div onClick={toggleChat} className='chat-icon-wrap cursor-pointer flex items-center px-2'>
@@ -44,7 +45,7 @@ const MeetingUi = memo(() => {
             <i className='bx bx-transfer-alt'></i>
           </div>
           <div className='controls-content__container hidden'>
-            <Controls />
+            <Controls ownerID={params.get("in")} />
           </div>
         </div>
       </div>

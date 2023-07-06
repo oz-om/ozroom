@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAppState } from "../../context";
 export const Navbar = () => {
-  const { loggedIn, dispatch } = useAppState();
+  const { loggedIn, dispatch, user } = useAppState();
   const location = useLocation();
   const navigate = useNavigate();
   function toggleMenu() {
@@ -38,7 +38,7 @@ export const Navbar = () => {
         {loggedIn && (
           <div id='user-info' className='relative grid place-content-center'>
             <div id='profile' onClick={toggleMenu} className='w-12 h-12 rounded-full overflow-hidden cursor-pointer'>
-              <img src='https://avatars.dicebear.com/api/bottts/ro.svg' alt='user avatar' />
+              <img src={user.avatar} alt='user avatar' />
             </div>
             <ul id='menu' className='absolute top-full right-0 bg-indigo-300 w-36 border border-indigo-400 rounded topArrow hidden z-10'>
               <li>

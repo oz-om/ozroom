@@ -30,14 +30,28 @@ function unUpdateRooms(rooms, updatedRoom) {
 function handelRequests(state, requestInfo) {
   if (requestInfo.type == "approve") {
     return {
-      requests: state.requests.filter((request) => request.id != requestInfo.id),
+      requests: state.requests.filter((request) => request.id != requestInfo.member.id),
       members: [...state.members, requestInfo.member],
-      PeersId: [...state.PeersId, requestInfo.member.PeerId],
+      Peers: [...state.Peers, requestInfo.member],
     };
   }
   return {
     requests: state.requests.filter((request) => request.id != requestInfo.id),
   };
+}
+
+function updateMember(members, updatedMember) {
+  let unUpdatedMembers = members.filter((member) => member.id !== updatedMember.id);
+  return [...unUpdatedMembers, updatedMember];
+}
+
+function handelControlledMembersFaces(controlledMembers, controlled) {
+  let unUpdatedControlled = controlledMembers.filter((control) => control.id !== controlled.id);
+  return [...unUpdatedControlled, controlled];
+}
+function handelControlledMembersAudios(controlledMembers, controlled) {
+  let unUpdatedControlled = controlledMembers.filter((control) => control.id !== controlled.id);
+  return [...unUpdatedControlled, controlled];
 }
 
 export default function reducer(state, { type, payload }) {
@@ -50,7 +64,6 @@ export default function reducer(state, { type, payload }) {
       return { ...state, myRooms: [...state.myRooms, payload] };
     case "fetchRooms":
       return { ...state, rooms: payload };
-
     case "fetchMyRooms":
       return { ...state, myRooms: payload };
     case "updateRoom":
@@ -59,21 +72,32 @@ export default function reducer(state, { type, payload }) {
     case "deleteRoom":
       let updateRoom = [...unUpdateRooms(state.myRooms, payload)];
       return { ...state, myRooms: updateRoom };
-    case "changeRole":
-      return { ...state, role: payload };
-    case "setRemotePsid":
-      return { ...state, remotePeersId: payload };
-    case "pushRequest":
+
+    case "pushRequest": // answer side
       return { ...state, requests: [...state.requests, payload] };
-    case "setPeersId":
-      return { ...state, PeersId: [...state.PeersId, payload] };
-    case "removeRequest":
-      let updateRequests = handelRequests({ requests: state.requests, members: state.members, PeersId: state.PeersId }, payload);
+    case "setPeers": // two sides [caller, answer]
+      return { ...state, Peers: [...state.Peers, ...payload] };
+    case "removeRequest": // answer side
+      let updateRequests = handelRequests({ requests: state.requests, members: state.members, Peers: state.Peers }, payload);
       return { ...state, ...updateRequests };
-    case "setCall":
+    case "setCall": // two sides
       return { ...state, call: payload };
-    case "pushStreams":
-      return { ...state, streams: [...state.streams, ...payload] };
+    case "setCalls": // caller side
+      return { ...state, calls: [...state.calls, payload] };
+    case "setMyStreamAndMembers": // caller side
+      return { ...state, myStream: payload.myStream, members: [...state.members, ...payload.roomMembers] };
+    case "updateMember": // caller side
+      let updatedMembers = updateMember(state.members, payload);
+      return { ...state, members: updatedMembers };
+    case "memberJoin": // answer side
+      return { ...state, members: [...state.members, payload] };
+    case "setControlledMemberFaces":
+      let updateControlledFace = handelControlledMembersFaces(state.controlledMembersFaces, payload);
+      return { ...state, controlledMembersFaces: updateControlledFace };
+    case "setControlledMemberAudios":
+      let updateControlledAudio = handelControlledMembersAudios(state.controlledMembersAudios, payload);
+      return { ...state, controlledMembersAudios: updateControlledAudio };
+
     default:
       return state;
   }

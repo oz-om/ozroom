@@ -77,7 +77,7 @@ export default function reducer(state, { type, payload }) {
       return { ...state, requests: [...state.requests, payload] };
     case "setPeers": // two sides [caller, answer]
       return { ...state, Peers: [...state.Peers, ...payload] };
-    case "removeRequest": // answer side
+    case "handelRequest": // answer side
       let updateRequests = handelRequests({ requests: state.requests, members: state.members, Peers: state.Peers }, payload);
       return { ...state, ...updateRequests };
     case "setCall": // two sides
@@ -92,10 +92,10 @@ export default function reducer(state, { type, payload }) {
     case "memberJoin": // answer side
       return { ...state, members: [...state.members, payload] };
     case "setControlledMemberFaces":
-      let updateControlledFace = handelControlledMembersFaces(state.controlledMembersFaces, payload);
+      let updateControlledFace = handelControlledMembersTracks(state.controlledMembersFaces, payload);
       return { ...state, controlledMembersFaces: updateControlledFace };
     case "setControlledMemberAudios":
-      let updateControlledAudio = handelControlledMembersAudios(state.controlledMembersAudios, payload);
+      let updateControlledAudio = handelControlledMembersTracks(state.controlledMembersAudios, payload);
       return { ...state, controlledMembersAudios: updateControlledAudio };
 
     default:

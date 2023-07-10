@@ -3,7 +3,7 @@ import { useAppState } from "../../context";
 
 export function Mirror({ isFullScreen, muted, stream, ownerStreamName, ownerStreamId }) {
   let currentVideo = useRef();
-  const { members } = useAppState();
+  const { controlledMembersFaces, controlledMembersAudios } = useAppState();
   const [streamDetails, setStreamDetails] = useState({
     video: true,
     audio: true,
@@ -15,15 +15,25 @@ export function Mirror({ isFullScreen, muted, stream, ownerStreamName, ownerStre
     currentVideo.current.play();
   }, [stream]);
 
+  function handelStreamDetails(controlledMembers, track) {
+    controlledMembers.forEach((controlled) => {
+      if (controlled.id == ownerStreamId) {
+        if (controlled.selfControlled || controlled.controlledByAdmin || controlled.controlledByMe) {
+          setStreamDetails((prev) => ({ ...prev, [track]: false }));
+        } else {
+          setStreamDetails((prev) => ({ ...prev, [track]: true }));
+        }
+      }
+    });
+  }
   useEffect(() => {
-    if (stream) {
-      console.log(ownerStreamName + " video is: " + stream.getVideoTracks()[0].enabled);
-      setStreamDetails({
-        video: stream.getVideoTracks()[0].enabled,
-        audio: stream.getAudioTracks()[0].enabled,
-      });
+    if (controlledMembersFaces.length) {
+      handelStreamDetails(controlledMembersFaces, "video");
     }
-  }, [stream.getVideoTracks()[0].enabled, stream.getAudioTracks()[0].enabled]);
+    if (controlledMembersAudios.length) {
+      handelStreamDetails(controlledMembersAudios, "audio");
+    }
+  }, [controlledMembersFaces, controlledMembersAudios]);
 
   function toggleFullScreen(e) {
     const mirrors = Array.from(document.querySelectorAll(".mirror"));

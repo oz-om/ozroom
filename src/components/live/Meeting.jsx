@@ -6,12 +6,13 @@ let apiKey = process.env.VITE_API_KEY;
 
 export default function Meeting({ roomID, ownerID }) {
   const navigate = useNavigate();
-  let { user, dispatch, streams, socket, Peer, call, members } = useAppState();
-  const [myStream, setMyStream] = useState(null);
+  let { user, dispatch, myStream, socket, Peers, call, members, controlledMembersFaces, controlledMembersAudios } = useAppState();
   const [remoteStream, setRemoteStream] = useState([]);
-  // controls state
-  const [enableVideo, setEnableVideo] = useState(true);
-  const [enableAudio, setEnableAudio] = useState(true);
+  // tracks controls state
+  const [streamDetails, setStreamDetails] = useState({
+    video: true,
+    audio: true,
+  });
 
   useEffect(() => {
     navigator.mediaDevices
@@ -20,10 +21,7 @@ export default function Meeting({ roomID, ownerID }) {
         video: true,
       })
       .then((myStream) => {
-        setMyStream(myStream);
-        socket.on("new_member_join", (sender) => {
-          dispatch({ type: "removeRequest", payload: { type: "approve", member: sender } });
-        });
+        dispatch({ type: "setMyStream", payload: myStream });
       })
       .catch((err) => {
         console.log(err);
@@ -66,6 +64,31 @@ export default function Meeting({ roomID, ownerID }) {
     }
   }, [remoteStream]);
 
+  function handleSelfControlled({ id, selfControlled }, dispatchType) {
+    dispatch({
+      type: dispatchType,
+      payload: {
+        id,
+        selfControlled,
+      },
+    });
+  }
+  useEffect(() => {
+    const handleSelfVideoControlled = (targetUser) => {
+      handleSelfControlled(targetUser, "setControlledMemberFaces");
+    };
+    const handleSelfAudioControlled = (targetUser) => {
+      handleSelfControlled(targetUser, "setControlledMemberAudios");
+    };
+
+    socket.on("controlled_his_video_track", handleSelfVideoControlled);
+    socket.on("controlled_his_audio_track", handleSelfAudioControlled);
+    return () => {
+      socket.off("controlled_his_video_track", handleSelfVideoControlled);
+      socket.off("controlled_his_audio_track", handleSelfAudioControlled);
+    };
+  }, [members, controlledMembersFaces, controlledMembersAudios]);
+
   function meetingKill() {
     closeStream()
       .then((result) => {
@@ -93,15 +116,27 @@ export default function Meeting({ roomID, ownerID }) {
     });
     return await req.json();
   }
+
+  function handelTracksControls(tracksType, track, dispatchType) {
+    myStream[tracksType]()[0].enabled = !myStream[tracksType]()[0].enabled;
+    let trackState = myStream[tracksType]()[0].enabled;
+    setStreamDetails((prev) => ({ ...prev, [track]: trackState }));
+    dispatch({
+      type: dispatchType,
+      payload: {
+        id: user.id,
+        selfControlled: !trackState,
+      },
+    });
+    members.forEach((member) => {
+      socket.emit(`controlled_his_${track}_track`, { member: member.socketId, targetUser: user.id, selfControlled: !trackState });
+    });
+  }
   function myVideoControl() {
-    myStream.getVideoTracks()[0].enabled = !myStream.getVideoTracks()[0].enabled;
-    let videoState = myStream.getVideoTracks()[0].enabled;
-    setEnableVideo(videoState);
+    handelTracksControls("getVideoTracks", "video", "setControlledMemberFaces");
   }
   function myAudioControl() {
-    myStream.getAudioTracks()[0].enabled = !myStream.getAudioTracks()[0].enabled;
-    let audioState = myStream.getAudioTracks()[0].enabled;
-    setEnableAudio(audioState);
+    handelTracksControls("getAudioTracks", "audio", "setControlledMemberAudios");
   }
 
   return (
@@ -114,10 +149,10 @@ export default function Meeting({ roomID, ownerID }) {
       </div>
       <div className='mirror-controls justify-center items-center gap-x-4 mt-1 absolute top-9'>
         <div onClick={myVideoControl} className='mirror-controls__item cursor-pointer text-blue-500 bg-blue-500/20 rounded-md px-2 '>
-          <i className={"bx text-3xl " + (enableVideo ? "bx-video " : "bx-video-off")}></i>
+          <i className={"bx text-3xl " + (streamDetails.video ? "bx-video " : "bx-video-off")}></i>
         </div>
         <div onClick={myAudioControl} className='mirror-controls__item cursor-pointer text-green-800 bg-green-500/20 rounded-md px-2'>
-          <i className={"bx text-3xl " + (enableAudio ? "bx-microphone" : "bx-microphone-off")}></i>
+          <i className={"bx text-3xl " + (streamDetails.audio ? "bx-microphone" : "bx-microphone-off")}></i>
         </div>
         <div onClick={meetingKill} className='mirror-controls__item cursor-pointer text-red-500 bg-red-500/20 rounded-md px-2'>
           <i className='bx bxs-phone-off text-3xl '></i>

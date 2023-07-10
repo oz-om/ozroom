@@ -34,11 +34,10 @@ export default function Controls() {
 }
 
 function RequestItem({ id, PeerId, socketId, avatar, name, time, state }) {
-  const { dispatch, socket, Peers, user } = useAppState();
+  const { socket, Peers, user } = useAppState();
 
   function handleAccept() {
-    socket.emit("approveRequest", { senderRequest: id, socketId, roomPeers: Peers, accepter: user.id });
-    // dispatch({ type: "removeRequest", payload: { id, type: "approve", member: { id, PeerId, avatar, username: name, remoteStream: null } } });
+    socket.emit("approveRequest", { senderRequest: socketId, accepter: socket.id });
   }
   return (
     <div className='request__item grid grid-cols-[48px_1fr_1fr] gap-x-2 mb-2'>
@@ -65,19 +64,56 @@ function RequestItem({ id, PeerId, socketId, avatar, name, time, state }) {
 }
 
 function RoomMemberItem({ id, avatar, name, stream }) {
-  const { socket, user, members } = useAppState();
-  function controlAudio() {
-    stream.getAudioTracks()[0].enabled = !stream.getAudioTracks()[0].enabled;
+  const { dispatch, socket, user, members, controlledMembersFaces, controlledMembersAudios } = useAppState();
+  const [tracksDetails, setTracksDetails] = useState({
+    video: true,
+    audio: true,
+  });
+
+  function handelMemberTracks(trackType, emitTrack, dispatchType) {
+    stream[trackType]()[0].enabled = !stream[trackType]()[0].enabled;
     members.forEach((member) => {
-      socket.emit("admin_control_audio_tracks", { member: member.socketId, targetUser: id, controlledByAdmin: !stream.getAudioTracks()[0].enabled });
+      socket.emit(`admin_control_${emitTrack}_tracks`, { member: member.socketId, targetUser: id, controlledByAdmin: !stream[trackType]()[0].enabled });
+    });
+    dispatch({
+      type: dispatchType,
+      payload: {
+        id,
+        controlledByMe: !stream[trackType]()[0].enabled,
+      },
     });
   }
   function controlVideo() {
-    stream.getVideoTracks()[0].enabled = !stream.getVideoTracks()[0].enabled;
-    members.forEach((member) => {
-      socket.emit("admin_control_video_tracks", { member: member.socketId, targetUser: id, controlledByAdmin: !stream.getVideoTracks()[0].enabled });
-    });
+    handelMemberTracks("getVideoTracks", "video", "setControlledMemberFaces");
   }
+
+  function controlAudio() {
+    handelMemberTracks("getAudioTracks", "audio", "setControlledMemberAudios");
+  }
+  useEffect(() => {
+    if (controlledMembersFaces.length) {
+      controlledMembersFaces.forEach((controlled) => {
+        if (controlled.id == id) {
+          if (controlled.controlledByMe) {
+            setTracksDetails((prev) => ({ ...prev, video: false }));
+          } else {
+            setTracksDetails((prev) => ({ ...prev, video: true }));
+          }
+        }
+      });
+    }
+    if (controlledMembersAudios.length) {
+      controlledMembersAudios.forEach((controlled) => {
+        if (controlled.id == id) {
+          if (controlled.controlledByMe) {
+            setTracksDetails((prev) => ({ ...prev, audio: false }));
+          } else {
+            setTracksDetails((prev) => ({ ...prev, audio: true }));
+          }
+        }
+      });
+    }
+  }, [controlledMembersFaces, controlledMembersAudios]);
   return (
     <div className='room_controls__members_item grid grid-cols-[48px_1fr_1fr] items-center gap-x-2 mb-2'>
       <div className='room_controls__members_item__avatar w-12 h-12 rounded-full overflow-hidden'>
@@ -88,12 +124,12 @@ function RoomMemberItem({ id, avatar, name, stream }) {
       </div>
       <div className='room_controls__members_item__actions flex justify-center gap-x-1'>
         <div onClick={controlAudio} className='mute flex flex-col items-center justify-between w-full cursor-pointer bg-sky-500/30 text-sky-300 rounded-md py-1'>
-          <i className='bx bxs-microphone-alt text-xl'></i>
+          <i className={"bx text-xl " + (tracksDetails.audio ? "bxs-microphone" : "bxs-microphone-off")}></i>
           <span className='text-xs font-light'>mute</span>
         </div>
         <div onClick={controlVideo} className='mute flex flex-col items-center justify-between w-full cursor-pointer bg-sky-500/30 text-sky-300 rounded-md py-1'>
-          <i className='bx bxs-video text-xl'></i>
-          <span className='text-xs font-light'>face-on</span>
+          <i className={"bx text-xl " + (tracksDetails.video ? "bxs-video" : "bxs-video-off")}></i>
+          <span className='text-xs font-light'>face</span>
         </div>
         <div className='kick flex flex-col items-center justify-between w-full cursor-pointer bg-red-500/30 text-red-500 rounded-md py-1'>
           <i className='iconoir-flash-off text-xl'></i>

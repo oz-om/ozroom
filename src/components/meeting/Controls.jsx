@@ -1,5 +1,5 @@
 import { useAppState } from "../../context";
-import { useState, useEffect } from "React";
+import { useState, useEffect } from "react";
 export default function Controls({ ownerID }) {
   const { members } = useAppState();
   return (

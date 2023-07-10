@@ -45,11 +45,7 @@ function updateMember(members, updatedMember) {
   return [...unUpdatedMembers, updatedMember];
 }
 
-function handelControlledMembersFaces(controlledMembers, controlled) {
-  let unUpdatedControlled = controlledMembers.filter((control) => control.id !== controlled.id);
-  return [...unUpdatedControlled, controlled];
-}
-function handelControlledMembersAudios(controlledMembers, controlled) {
+function handelControlledMembersTracks(controlledMembers, controlled) {
   let unUpdatedControlled = controlledMembers.filter((control) => control.id !== controlled.id);
   return [...unUpdatedControlled, controlled];
 }

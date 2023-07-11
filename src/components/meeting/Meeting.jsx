@@ -4,85 +4,86 @@ import { useAppState } from "../../context";
 import { memo, useEffect, useRef, useState } from "react";
 let apiKey = process.env.VITE_API_KEY;
 
-function Meeting() {
+function Meeting({ accepterSocketId }) {
   const navigate = useNavigate();
   const { user, dispatch, socket, Peer, Peers, call, members, myStream, calls, controlledMembersFaces, controlledMembersAudios } = useAppState();
-  const [remoteStream, setRemoteStream] = useState([]);
-  const [joinStream, setJoinStream] = useState([]);
   // tracks controls state
   const [streamDetails, setStreamDetails] = useState({
     video: true,
     audio: true,
   });
-
-  // make calls situation
-  useEffect(() => {
-    if (myStream && calls.length) {
-      calls.forEach((call) => {
-        call?.on("stream", (remoteStream) => {
-          setRemoteStream((prev) => [...prev, { remoteStream, streamerPeerId: call.peer }]);
-        });
-      });
-    }
-  }, [calls]);
-
-  useEffect(() => {
-    if (remoteStream.length) {
-      remoteStream.forEach((remote) => {
-        for (let n = 0; n < members.length; n++) {
-          const member = members[n];
-          if (remote.streamerPeerId == member.PeerId) {
-            const memberWithStream = {
-              ...member,
-              remoteStream: remote.remoteStream,
-            };
-            dispatch({ type: "updateMember", payload: memberWithStream });
-            break;
-          }
-        }
-      });
-    }
-  }, [remoteStream]);
-
+  const { id, username, avatar } = user;
   // receive call situation
   useEffect(() => {
-    socket.on("new_member_join", (sender) => {
-      dispatch({ type: "memberJoin", payload: sender });
-    });
-    if (myStream && call) {
+    if (call) {
       call.answer(myStream);
-      call.on("stream", (remoteStream) => {
-        setJoinStream((prev) => {
-          const isAlreadyExist = prev.find((stream) => stream.remoteStream.id == remoteStream.id);
-          if (!isAlreadyExist && !prev) {
-            return [{ remoteStream, callerPeerId: call.metadata.callerPeerId }];
-          }
-          if (!isAlreadyExist && prev) {
-            return [...prev, { remoteStream, callerPeerId: call.metadata.callerPeerId }];
-          }
-          return prev;
+      call
+        .once("stream", (remoteStream) => {
+          dispatch({
+            type: "setMember",
+            payload: {
+              ...call.metadata.callerInfo,
+              remoteStream,
+            },
+          });
+        })
+        .off();
+      if (call.metadata.callerInfo.admin) {
+        socket.emit("requestIntegrationCalls", { receiverId: call.metadata.callerInfo.callerSocketId, senderId: socket.id });
+      }
+      dispatch({ type: "setCall", payload: null });
+
+      socket.on("makeIntegrationCalls", (members) => {
+        members.forEach((member) => {
+          socket.emit("integrateCallRequest", {
+            receiverId: member.socketId,
+            sender: {
+              id,
+              username,
+              avatar,
+              senderPeerId: Peers[0].PeerId,
+              senderSocketId: socket.id,
+            },
+          });
         });
       });
     }
-  }, [myStream, call]);
 
+    return () => {
+      socket.off("makeIntegrationCalls");
+    };
+  }, [call]);
+
+  // make call situation
   useEffect(() => {
-    if (joinStream) {
-      joinStream.forEach((remote) => {
-        for (let i = 0; i < members.length; i++) {
-          const member = members[i];
-          if (member.PeerId == remote.callerPeerId) {
-            let updatedMember = {
-              ...member,
-              remoteStream: remote.remoteStream,
-            };
-            dispatch({ type: "updateMember", payload: updatedMember });
-            break;
-          }
-        }
+    if (myStream) {
+      socket.on("integrateCallRequest", (sender) => {
+        let call = Peer.call(sender.senderPeerId, myStream, {
+          metadata: {
+            callerInfo: {
+              id,
+              username,
+              avatar,
+              callerSocketId: socket.id,
+              callerPeerId: Peers[0].PeerId,
+              admin: false,
+            },
+          },
+        });
+        call
+          .once("stream", (remoteStream) => {
+            dispatch({
+              type: "setMember",
+              payload: {
+                ...sender,
+                remoteStream,
+              },
+            });
+          })
+          .off();
       });
     }
-  }, [joinStream]);
+  }, []);
 
   function handleAdminControlTracks(targetUser, controlledMembersTracks, getTracks, dispatchType) {
     let controlledMember = controlledMembersTracks.find((controlled) => controlled.id == targetUser.id);

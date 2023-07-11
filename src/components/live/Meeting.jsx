@@ -6,7 +6,7 @@ let apiKey = process.env.VITE_API_KEY;
 
 export default function Meeting({ roomID, ownerID }) {
   const navigate = useNavigate();
-  let { user, dispatch, myStream, socket, Peers, call, members, controlledMembersFaces, controlledMembersAudios } = useAppState();
+  let { user, dispatch, myStream, socket, Peer, call, members, controlledMembersFaces, controlledMembersAudios } = useAppState();
   const [remoteStream, setRemoteStream] = useState([]);
   // tracks controls state
   const [streamDetails, setStreamDetails] = useState({
@@ -15,54 +15,13 @@ export default function Meeting({ roomID, ownerID }) {
   });
 
   useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({
-        audio: true,
-        video: true,
-      })
-      .then((myStream) => {
-        dispatch({ type: "setMyStream", payload: myStream });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (myStream && call) {
-      call.answer(myStream);
-      call.on("stream", (remoteStream) => {
-        setRemoteStream((prev) => {
-          const isAlreadyExist = prev.find((stream) => stream.remoteStream.id == remoteStream.id);
-          if (!isAlreadyExist && !prev) {
-            return [{ remoteStream, callerPeerId: call.metadata.callerPeerId }];
-          }
-          if (!isAlreadyExist && prev) {
-            return [...prev, { remoteStream, callerPeerId: call.metadata.callerPeerId }];
-          }
-          return prev;
-        });
-      });
-    }
-  }, [myStream, call]);
-
-  useEffect(() => {
-    if (remoteStream) {
-      remoteStream.forEach((remote) => {
-        for (let i = 0; i < members.length; i++) {
-          const member = members[i];
-          if (member.PeerId == remote.callerPeerId) {
-            let updatedMember = {
-              ...member,
-              remoteStream: remote.remoteStream,
-            };
-            dispatch({ type: "updateMember", payload: updatedMember });
-            break;
-          }
-        }
-      });
-    }
-  }, [remoteStream]);
+    socket.on("requestIntegrationCalls", (sender) => {
+      socket.emit("makeIntegrationCalls", { receiverId: sender, members });
+    });
+    return () => {
+      socket.off("requestIntegrationCalls");
+    };
+  }, [members]);
 
   function handleSelfControlled({ id, selfControlled }, dispatchType) {
     dispatch({

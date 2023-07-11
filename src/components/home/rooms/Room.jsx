@@ -26,7 +26,18 @@ export const Room = ({ id, roomName, roomAvatar, topic, desc, isPrivate, max, ow
         console.log(res.err);
         return;
       }
-      navigate(`/live?in=${ownerID}&room=${id}`);
+      navigator.mediaDevices
+        .getUserMedia({
+          audio: true,
+          video: true,
+        })
+        .then((myStream) => {
+          dispatch({ type: "setMyStream", payload: myStream });
+          navigate(`/live?in=${ownerID}&room=${id}`);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     });
   }
   async function deleteRoom() {

@@ -5,16 +5,15 @@ import { useAppState } from "../../../context";
 let apiKey = process.env.VITE_API_KEY;
 
 export const Room = ({ roomID, roomName, roomAvatar, isPrivate, count, max, ownerID }) => {
-  const { dispatch, user, Peers, socket, Peer, members } = useAppState();
+  const { dispatch, user, Peers, socket, Peer, members, call } = useAppState();
   const navigate = useNavigate();
+  const { id, username, avatar } = user;
   async function handleJoin() {
     isRoomOnline().then((res) => {
       if (!res.isOnline) {
         return console.log(res.err);
       }
-
-      const { id, username, avatar } = user;
-      socket.emit("requestPeerID", {
+      socket.emit("callRequest", {
         senderRequest: {
           id,
           username,
@@ -25,31 +24,6 @@ export const Room = ({ roomID, roomName, roomAvatar, isPrivate, count, max, owne
           senderSocketId: socket.id,
         },
         receiverRequest: ownerID,
-        targetRoom: roomID,
-      });
-      socket.on("approved", ({ roomPeers }) => {
-        navigator.mediaDevices
-          .getUserMedia({
-            audio: true,
-            video: true,
-          })
-          .then((myStream) => {
-            let calls = [];
-            roomPeers.forEach((peer) => {
-              socket.emit("new_member_join", { receiverId: peer.socketId, sender: { id: user.id, PeerId: Peers[0].PeerId, username: user.username, avatar: user.avatar, socketId: socket.id } });
-              setTimeout(() => {
-                let call = Peer.call(peer.PeerId, myStream, {
-                  metadata: {
-                    callerPeerId: Peers[0].PeerId,
-                  },
-                });
-                calls.push(call);
-                dispatch({ type: "setCalls", payload: call });
-              }, 2000);
-            });
-            dispatch({ type: "setMyStreamAndMembers", payload: { myStream, roomMembers: roomPeers } });
-            navigate(`/meeting?in=${ownerID}`);
-          });
       });
     });
   }
@@ -65,6 +39,23 @@ export const Room = ({ roomID, roomName, roomAvatar, isPrivate, count, max, owne
     });
     return await req.json();
   }
+
+  useEffect(() => {
+    if (call) {
+      navigator.mediaDevices
+        .getUserMedia({
+          video: true,
+          audio: true,
+        })
+        .then((myStream) => {
+          dispatch({ type: "setMyStream", payload: myStream });
+          navigate("/meeting");
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  }, [call]);
 
   return (
     <div id='room' className='grid grid-cols-[auto_1fr_1fr] gap-x-2 items-center justify-around p-1 rounded-lg max-h-28'>

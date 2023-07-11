@@ -1,4 +1,5 @@
 let apiKey = process.env.VITE_API_KEY;
+
 export async function fetchRooms() {
   let req = await fetch(`${apiKey}/get_rooms`, {
     headers: { "Content-Type": "application/json" },
@@ -40,11 +41,6 @@ function handelRequests(state, requestInfo) {
   };
 }
 
-function updateMember(members, updatedMember) {
-  let unUpdatedMembers = members.filter((member) => member.id !== updatedMember.id);
-  return [...unUpdatedMembers, updatedMember];
-}
-
 function handelControlledMembersTracks(controlledMembers, controlled) {
   let unUpdatedControlled = controlledMembers.filter((control) => control.id !== controlled.id);
   return [...unUpdatedControlled, controlled];
@@ -76,16 +72,12 @@ export default function reducer(state, { type, payload }) {
     case "handelRequest": // answer side
       let updateRequests = handelRequests({ requests: state.requests, members: state.members, Peers: state.Peers }, payload);
       return { ...state, ...updateRequests };
+
     case "setCall": // two sides
       return { ...state, call: payload };
-    case "setCalls": // caller side
-      return { ...state, calls: [...state.calls, payload] };
-    case "setMyStreamAndMembers": // caller side
-      return { ...state, myStream: payload.myStream, members: [...state.members, ...payload.roomMembers] };
-    case "updateMember": // caller side
-      let updatedMembers = updateMember(state.members, payload);
-      return { ...state, members: updatedMembers };
-    case "memberJoin": // answer side
+    case "setMyStream": // caller side
+      return { ...state, myStream: payload };
+    case "setMember": // caller side
       return { ...state, members: [...state.members, payload] };
     case "setControlledMemberFaces":
       let updateControlledFace = handelControlledMembersTracks(state.controlledMembersFaces, payload);

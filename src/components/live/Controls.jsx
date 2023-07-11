@@ -4,8 +4,8 @@ import { useAppState } from "../../context";
 export default function Controls() {
   const { dispatch, socket, requests, Peers, members } = useAppState();
   useEffect(() => {
-    socket.on("receiveRequestPeer", (requestInfo) => {
-      dispatch({ type: "pushRequest", payload: requestInfo.senderRequest });
+    socket.on("receiveCallRequest", (request) => {
+      dispatch({ type: "pushRequest", payload: request.senderRequest });
     });
   }, []);
 
@@ -34,10 +34,44 @@ export default function Controls() {
 }
 
 function RequestItem({ id, PeerId, socketId, avatar, name, time, state }) {
-  const { socket, Peers, user } = useAppState();
+  const { dispatch, socket, Peer, Peers, user, myStream, members } = useAppState();
 
-  function handleAccept() {
-    socket.emit("approveRequest", { senderRequest: socketId, accepter: socket.id });
+  async function handleAccept() {
+    const { id, username, avatar } = user;
+    let call = await Peer.call(PeerId, myStream, {
+      metadata: {
+        callerInfo: {
+          id,
+          username,
+          avatar,
+          callerSocketId: socket.id,
+          callerPeerId: Peers[0].PeerId,
+          admin: true,
+        },
+      },
+    });
+    call
+      .once("stream", (remoteStream) => {
+        handleRequestDispatch(remoteStream);
+      })
+      .off();
+  }
+  function handleRequestDispatch(remoteStream) {
+    dispatch({
+      type: "handelRequest",
+      payload: {
+        type: "approve",
+        member: {
+          id,
+          username: name,
+          avatar,
+          socketId,
+          PeerId,
+          remoteStream,
+          admin: false,
+        },
+      },
+    });
   }
   return (
     <div className='request__item grid grid-cols-[48px_1fr_1fr] gap-x-2 mb-2'>

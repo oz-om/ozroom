@@ -8,8 +8,8 @@ export default function Controls({ ownerID }) {
         <h4 className='text-xs text-gray-100/50 font-light mt-1 mb-2'>room manage</h4>
         <div className='room_controls__members_list'>
           {members.map((member) => {
-            const { id, username, avatar, remoteStream } = member;
-            return <RoomMemberItem key={id} id={id} avatar={avatar} name={username} stream={remoteStream} isAdmin={String(id) == ownerID} />;
+            const { id, username, avatar, remoteStream, admin } = member;
+            return <RoomMemberItem key={id} id={id} avatar={avatar} name={username} stream={remoteStream} isAdmin={admin} />;
           })}
         </div>
       </div>

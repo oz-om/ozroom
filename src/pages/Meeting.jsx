@@ -1,11 +1,9 @@
-import { memo, useRef } from "react";
+import { memo } from "react";
 import Meeting from "../components/meeting/Meeting";
 import Chat from "../components/meeting/Chat";
 import Controls from "../components/meeting/Controls";
 
 const MeetingUi = memo(() => {
-  let { current: params } = useRef(new URL(document.location).searchParams);
-
   function toggleChat() {
     const chatContainer = document.querySelector(".chat-container");
     chatContainer.classList.toggle("h-full");
@@ -45,7 +43,7 @@ const MeetingUi = memo(() => {
             <i className='bx bx-transfer-alt'></i>
           </div>
           <div className='controls-content__container hidden'>
-            <Controls ownerID={params.get("in")} />
+            <Controls />
           </div>
         </div>
       </div>

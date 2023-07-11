@@ -32,10 +32,15 @@ export const StateProvider = ({ children }) => {
         const { user } = state;
         dispatch({ type: "setPeers", payload: [{ id: user.id, username: user.username, avatar: user.avatar, PeerId: myPeerId, socketId: socket.id }] });
       });
+
       Peer.on("call", (call) => {
         console.log("receive call state");
-        dispatch({ type: "setCall", payload: call });
+        dispatch({
+          type: "setCall",
+          payload: call,
+        });
       });
+
       socket.on("room_initialized", () => {
         console.log("initialized");
       });

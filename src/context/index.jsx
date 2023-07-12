@@ -15,12 +15,12 @@ export const StateProvider = ({ children }) => {
     rooms: [],
     myRooms: [],
     //
+    myPeerId: [],
     requests: [],
     members: [],
     Peers: [],
     call: null, //call that we receive
     myStream: null,
-    calls: [], // calls that we make
     controlledMembersFaces: [],
     controlledMembersAudios: [],
   };
@@ -29,8 +29,7 @@ export const StateProvider = ({ children }) => {
     socket.emit("initRoom", state.user.id);
     if (state.user.id) {
       Peer.on("open", (myPeerId) => {
-        const { user } = state;
-        dispatch({ type: "setPeers", payload: [{ id: user.id, username: user.username, avatar: user.avatar, PeerId: myPeerId, socketId: socket.id }] });
+        dispatch({ type: "setMyPeerId", payload: myPeerId });
       });
 
       Peer.on("call", (call) => {

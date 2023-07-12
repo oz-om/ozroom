@@ -6,7 +6,7 @@ let apiKey = process.env.VITE_API_KEY;
 
 function Meeting({ accepterSocketId }) {
   const navigate = useNavigate();
-  const { user, dispatch, socket, Peer, Peers, call, members, myStream, calls, controlledMembersFaces, controlledMembersAudios } = useAppState();
+  const { user, dispatch, socket, Peer, myPeerId, call, members, myStream, controlledMembersFaces, controlledMembersAudios } = useAppState();
   // tracks controls state
   const [streamDetails, setStreamDetails] = useState({
     video: true,
@@ -41,7 +41,7 @@ function Meeting({ accepterSocketId }) {
               id,
               username,
               avatar,
-              senderPeerId: Peers[0].PeerId,
+              senderPeerId: myPeerId,
               senderSocketId: socket.id,
             },
           });
@@ -65,7 +65,7 @@ function Meeting({ accepterSocketId }) {
               username,
               avatar,
               callerSocketId: socket.id,
-              callerPeerId: Peers[0].PeerId,
+              callerPeerId: myPeerId,
               admin: false,
             },
           },

@@ -33,7 +33,6 @@ function handelRequests(state, requestInfo) {
     return {
       requests: state.requests.filter((request) => request.id != requestInfo.member.id),
       members: [...state.members, requestInfo.member],
-      Peers: [...state.Peers, requestInfo.member],
     };
   }
   return {
@@ -65,19 +64,21 @@ export default function reducer(state, { type, payload }) {
       let updateRoom = [...unUpdateRooms(state.myRooms, payload)];
       return { ...state, myRooms: updateRoom };
 
-    case "pushRequest": // answer side
+    case "pushRequest":
       return { ...state, requests: [...state.requests, payload] };
-    case "setPeers": // two sides [caller, answer]
-      return { ...state, Peers: [...state.Peers, ...payload] };
-    case "handelRequest": // answer side
-      let updateRequests = handelRequests({ requests: state.requests, members: state.members, Peers: state.Peers }, payload);
+    case "setMyPeerId":
+      return { ...state, myPeerId: payload };
+    case "setPeers":
+      return { ...state, Peers: [...state.Peers, payload] };
+    case "handelRequest":
+      let updateRequests = handelRequests({ requests: state.requests, members: state.members }, payload);
       return { ...state, ...updateRequests };
 
-    case "setCall": // two sides
+    case "setCall":
       return { ...state, call: payload };
-    case "setMyStream": // caller side
+    case "setMyStream":
       return { ...state, myStream: payload };
-    case "setMember": // caller side
+    case "setMember":
       return { ...state, members: [...state.members, payload] };
     case "setControlledMemberFaces":
       let updateControlledFace = handelControlledMembersTracks(state.controlledMembersFaces, payload);

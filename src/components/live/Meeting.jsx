@@ -6,8 +6,8 @@ let apiKey = process.env.VITE_API_KEY;
 
 export default function Meeting({ roomID, ownerID }) {
   const navigate = useNavigate();
-  let { user, dispatch, myStream, socket, Peer, call, members, controlledMembersFaces, controlledMembersAudios } = useAppState();
-  const [remoteStream, setRemoteStream] = useState([]);
+  let { user, dispatch, myStream, socket, members, Peers, controlledMembersFaces, controlledMembersAudios } = useAppState();
+
   // tracks controls state
   const [streamDetails, setStreamDetails] = useState({
     video: true,
@@ -16,12 +16,12 @@ export default function Meeting({ roomID, ownerID }) {
 
   useEffect(() => {
     socket.on("requestIntegrationCalls", (sender) => {
-      socket.emit("makeIntegrationCalls", { receiverId: sender, members });
+      socket.emit("makeIntegrationCalls", { receiverId: sender, Peers });
     });
     return () => {
       socket.off("requestIntegrationCalls");
     };
-  }, [members]);
+  }, [Peers]);
 
   function handleSelfControlled({ id, selfControlled }, dispatchType) {
     dispatch({

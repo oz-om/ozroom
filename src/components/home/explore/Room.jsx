@@ -5,13 +5,17 @@ import { useAppState } from "../../../context";
 let apiKey = process.env.VITE_API_KEY;
 
 export const Room = ({ roomID, roomName, roomAvatar, isPrivate, count, max, ownerID }) => {
-  const { dispatch, user, Peers, socket, Peer, members, call } = useAppState();
+  const { dispatch, user, myPeerId, socket, call } = useAppState();
   const navigate = useNavigate();
   const { id, username, avatar } = user;
+  const [emitJoin, setEmitJoin] = useState(false);
   async function handleJoin() {
     isRoomOnline().then((res) => {
       if (!res.isOnline) {
         return console.log(res.err);
+      }
+      if (myPeerId) {
+        setEmitJoin(true);
       }
       socket.emit("callRequest", {
         senderRequest: {
@@ -20,7 +24,7 @@ export const Room = ({ roomID, roomName, roomAvatar, isPrivate, count, max, owne
           avatar,
           time: "12:30",
           state: "online",
-          senderPeerId: Peers[0].PeerId,
+          senderPeerId: myPeerId,
           senderSocketId: socket.id,
         },
         receiverRequest: ownerID,
@@ -75,8 +79,10 @@ export const Room = ({ roomID, roomName, roomAvatar, isPrivate, count, max, owne
           <span className='text-xs text-gray-100/50 font-light md:hidden'>max</span>
           <p className='text-xl text-orange-400'>{max}</p>
         </div>
-        <div id='join' onClick={handleJoin} className='col-span-2 py-1 md:col-auto'>
-          <button className='bg-violet-500 block p-2 w-6/12 mx-auto rounded-xl cursor-pointer hover:bg-violet-400'>join</button>
+        <div id='join' className='col-span-2 py-1 md:col-auto '>
+          <button type='button' onClick={handleJoin} className={"block p-2 w-6/12 mx-auto rounded-xl   " + (emitJoin ? "bg-violet-500/20 pointer-events-none" : "bg-violet-500 hover:bg-violet-400 cursor-pointer")}>
+            {emitJoin ? <i className='bx bx-loader bx-spin'></i> : "join"}
+          </button>
         </div>
       </div>
     </div>

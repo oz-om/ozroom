@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppState } from "../../context";
 
 export default function Controls() {
-  const { dispatch, socket, requests, Peers, members } = useAppState();
+  const { dispatch, socket, requests, members } = useAppState();
   useEffect(() => {
     socket.on("receiveCallRequest", (request) => {
       dispatch({ type: "pushRequest", payload: request.senderRequest });
@@ -34,27 +34,52 @@ export default function Controls() {
 }
 
 function RequestItem({ id, PeerId, socketId, avatar, name, time, state }) {
-  const { dispatch, socket, Peer, Peers, user, myStream, members } = useAppState();
+  const { dispatch, socket, Peer, myPeerId, user, myStream, Peers } = useAppState();
+  const [inCall, setInCall] = useState(false);
 
-  async function handleAccept() {
+  function handleAccept() {
     const { id, username, avatar } = user;
-    let call = await Peer.call(PeerId, myStream, {
+
+    Peer.call(PeerId, myStream, {
       metadata: {
         callerInfo: {
           id,
           username,
           avatar,
           callerSocketId: socket.id,
-          callerPeerId: Peers[0].PeerId,
+          callerPeerId: myPeerId,
           admin: true,
         },
       },
-    });
-    call
+    })
       .once("stream", (remoteStream) => {
         handleRequestDispatch(remoteStream);
       })
       .off();
+    setInCall(true);
+    setTimeout(() => {
+      setInCall(false);
+    }, 5000);
+    setToPeers();
+  }
+  function setToPeers() {
+    let peer = Peers.find((peer) => peer.id == id);
+    console.log(peer);
+    console.log({
+      id,
+      name,
+      socketId,
+    });
+    if (!peer) {
+      dispatch({
+        type: "setPeers",
+        payload: {
+          id,
+          name,
+          socketId,
+        },
+      });
+    }
   }
   function handleRequestDispatch(remoteStream) {
     dispatch({
@@ -86,8 +111,8 @@ function RequestItem({ id, PeerId, socketId, avatar, name, time, state }) {
         </div>
       </div>
       <div className='request__item__actions flex items-center justify-center gap-x-1'>
-        <button onClick={handleAccept} className='accept grid place-content-center bg-green-500/50 w-full h-2/4 rounded-md cursor-pointer'>
-          <i className='bx bxs-plug text-green-300'></i>
+        <button onClick={handleAccept} className={"accept grid place-content-center w-full h-2/4 rounded-md  " + (inCall ? "bg-green-500/20 pointer-events-none" : "bg-green-500/50 cursor-pointer")}>
+          <i className={"bx text-green-300 " + (inCall ? "bx-loader bx-spin" : "bxs-plug")}></i>
         </button>
         <button className='reject grid place-content-center bg-red-500/50 w-full h-2/4 rounded-md cursor-pointer overflow-hidden'>
           <i className='bx bx-x text-2xl text-red-300'></i>

@@ -46,8 +46,6 @@ export const StateProvider = ({ children }) => {
     }
   }, [state.user.id]);
 
-  // const methods = {};
-
   return <context.Provider value={{ ...state, dispatch, socket, Peer }}>{children}</context.Provider>;
 };
 

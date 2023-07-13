@@ -36,7 +36,7 @@ function handelRequests(state, requestInfo) {
     };
   }
   return {
-    requests: state.requests.filter((request) => request.id != requestInfo.id),
+    requests: state.requests.filter((request) => request.id != requestInfo.member.id),
   };
 }
 
@@ -80,13 +80,20 @@ export default function reducer(state, { type, payload }) {
       return { ...state, myStream: payload };
     case "setMember":
       return { ...state, members: [...state.members, payload] };
+    case "removeMember":
+      let updatedPeers = state.members.filter((peer) => peer.id != payload);
+      let updatedMembers = state.members.filter((member) => member.id != payload);
+      let updatedControlledFaces = state.controlledMembersFaces.filter((controlled) => controlled.id != payload);
+      let updatedControlledAudios = state.controlledMembersAudios.filter((controlled) => controlled.id != payload);
+      return { ...state, members: updatedMembers, Peers: updatedPeers, controlledMembersFaces: updatedControlledFaces, controlledMembersAudios: updatedControlledAudios };
     case "setControlledMemberFaces":
       let updateControlledFace = handelControlledMembersTracks(state.controlledMembersFaces, payload);
       return { ...state, controlledMembersFaces: updateControlledFace };
     case "setControlledMemberAudios":
       let updateControlledAudio = handelControlledMembersTracks(state.controlledMembersAudios, payload);
       return { ...state, controlledMembersAudios: updateControlledAudio };
-
+    case "killRoom":
+      return { ...state, myStream: null, members: [], requests: [], Peers: [], call: null, controlledMembersFaces: [], controlledMembersAudios: [] };
     default:
       return state;
   }

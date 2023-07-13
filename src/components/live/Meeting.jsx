@@ -23,6 +23,16 @@ export default function Meeting({ roomID, ownerID }) {
     };
   }, [Peers]);
 
+  // member end call
+  useEffect(() => {
+    socket.on("memberEndCall", (targetMember) => {
+      dispatch({ type: "removeMember", payload: targetMember });
+    });
+    return () => {
+      socket.off("memberEndCall");
+    };
+  }, []);
+
   function handleSelfControlled({ id, selfControlled }, dispatchType) {
     dispatch({
       type: dispatchType,
@@ -55,6 +65,10 @@ export default function Meeting({ roomID, ownerID }) {
           console.log(result);
           return;
         }
+        members.forEach((member) => {
+          socket.emit("meetingEnded", member.socketId);
+        });
+        dispatch({ type: "killRoom" });
         navigate("/rooms");
       })
       .catch((err) => {

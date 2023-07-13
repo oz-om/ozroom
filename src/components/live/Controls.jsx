@@ -7,6 +7,9 @@ export default function Controls() {
     socket.on("receiveCallRequest", (request) => {
       dispatch({ type: "pushRequest", payload: request.senderRequest });
     });
+    return () => {
+      socket.off("receiveCallRequest");
+    };
   }, []);
 
   return (
@@ -46,8 +49,8 @@ function RequestItem({ id, PeerId, socketId, avatar, name, time, state }) {
           id,
           username,
           avatar,
-          callerSocketId: socket.id,
-          callerPeerId: myPeerId,
+          socketId: socket.id,
+          PeerId: myPeerId,
           admin: true,
         },
       },
@@ -98,6 +101,19 @@ function RequestItem({ id, PeerId, socketId, avatar, name, time, state }) {
       },
     });
   }
+
+  function handleReject() {
+    socket.emit("reject", socketId);
+    dispatch({
+      type: "handelRequest",
+      payload: {
+        type: "reject",
+        member: {
+          id,
+        },
+      },
+    });
+  }
   return (
     <div className='request__item grid grid-cols-[48px_1fr_1fr] gap-x-2 mb-2'>
       <div className='request__item__avatar w-12 h-12 rounded-full overflow-hidden'>
@@ -114,7 +130,7 @@ function RequestItem({ id, PeerId, socketId, avatar, name, time, state }) {
         <button onClick={handleAccept} className={"accept grid place-content-center w-full h-2/4 rounded-md  " + (inCall ? "bg-green-500/20 pointer-events-none" : "bg-green-500/50 cursor-pointer")}>
           <i className={"bx text-green-300 " + (inCall ? "bx-loader bx-spin" : "bxs-plug")}></i>
         </button>
-        <button className='reject grid place-content-center bg-red-500/50 w-full h-2/4 rounded-md cursor-pointer overflow-hidden'>
+        <button onClick={handleReject} className='reject grid place-content-center bg-red-500/50 w-full h-2/4 rounded-md cursor-pointer overflow-hidden'>
           <i className='bx bx-x text-2xl text-red-300'></i>
         </button>
       </div>
@@ -173,6 +189,16 @@ function RoomMemberItem({ id, avatar, name, stream }) {
       });
     }
   }, [controlledMembersFaces, controlledMembersAudios]);
+
+  function killMember() {
+    members.forEach((member) => {
+      socket.emit("adminKillMember", {
+        receiverId: member.socketId,
+        targetMember: id,
+      });
+    });
+    dispatch({ type: "removeMember", payload: id });
+  }
   return (
     <div className='room_controls__members_item grid grid-cols-[48px_1fr_1fr] items-center gap-x-2 mb-2'>
       <div className='room_controls__members_item__avatar w-12 h-12 rounded-full overflow-hidden'>
@@ -190,7 +216,7 @@ function RoomMemberItem({ id, avatar, name, stream }) {
           <i className={"bx text-xl " + (tracksDetails.video ? "bxs-video" : "bxs-video-off")}></i>
           <span className='text-xs font-light'>face</span>
         </div>
-        <div className='kick flex flex-col items-center justify-between w-full cursor-pointer bg-red-500/30 text-red-500 rounded-md py-1'>
+        <div onClick={killMember} className='kick flex flex-col items-center justify-between w-full cursor-pointer bg-red-500/30 text-red-500 rounded-md py-1'>
           <i className='iconoir-flash-off text-xl'></i>
           <span className='text-xs font-light'>kill</span>
         </div>

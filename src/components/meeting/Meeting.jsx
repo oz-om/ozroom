@@ -29,7 +29,7 @@ function Meeting({ accepterSocketId }) {
         })
         .off();
       if (call.metadata.callerInfo.admin) {
-        socket.emit("requestIntegrationCalls", { receiverId: call.metadata.callerInfo.callerSocketId, senderId: socket.id });
+        socket.emit("requestIntegrationCalls", { receiverId: call.metadata.callerInfo.socketId, senderId: socket.id });
       }
       dispatch({ type: "setCall", payload: null });
 
@@ -41,8 +41,8 @@ function Meeting({ accepterSocketId }) {
               id,
               username,
               avatar,
-              senderPeerId: myPeerId,
-              senderSocketId: socket.id,
+              PeerId: myPeerId,
+              socketId: socket.id,
             },
           });
         });
@@ -58,14 +58,14 @@ function Meeting({ accepterSocketId }) {
   useEffect(() => {
     if (myStream) {
       socket.on("integrateCallRequest", (sender) => {
-        let call = Peer.call(sender.senderPeerId, myStream, {
+        let call = Peer.call(sender.PeerId, myStream, {
           metadata: {
             callerInfo: {
               id,
               username,
               avatar,
-              callerSocketId: socket.id,
-              callerPeerId: myPeerId,
+              socketId: socket.id,
+              PeerId: myPeerId,
               admin: false,
             },
           },
@@ -83,6 +83,42 @@ function Meeting({ accepterSocketId }) {
           .off();
       });
     }
+    return () => {
+      socket.off("integrateCallRequest");
+    };
+  }, []);
+
+  // meeting ended
+  useEffect(() => {
+    socket.on("meetingEnded", () => {
+      meetingKill();
+    });
+    return () => {
+      socket.off("meetingEnded");
+    };
+  }, []);
+
+  // member end call
+  useEffect(() => {
+    socket.on("memberEndCall", (targetMember) => {
+      dispatch({ type: "removeMember", payload: targetMember });
+    });
+    return () => {
+      socket.off("memberEndCall");
+    };
+  }, []);
+
+  // admin kill member
+  useEffect(() => {
+    socket.on("adminKillMember", (targetMember) => {
+      if (targetMember == id) {
+        meetingKill();
+      }
+      dispatch({ type: "removeMember", payload: targetMember });
+    });
+    return () => {
+      socket.off("adminKillMember");
+    };
   }, []);
 
   function handleAdminControlTracks(targetUser, controlledMembersTracks, getTracks, dispatchType) {
@@ -158,7 +194,11 @@ function Meeting({ accepterSocketId }) {
     await myStream.getTracks().forEach(function (track) {
       track.stop();
     });
-    navigate("/rooms");
+    members.forEach((member) => {
+      socket.emit("memberEndCall", { receiverId: member.socketId, targetMember: id });
+    });
+    dispatch({ type: "killRoom" });
+    navigate("/");
   }
 
   function handelTracksControls(tracksType, track, dispatchType) {

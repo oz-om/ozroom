@@ -17,6 +17,7 @@ export const Room = ({ roomID, roomName, roomAvatar, isPrivate, count, max, owne
       if (myPeerId) {
         setEmitJoin(true);
       }
+
       socket.emit("callRequest", {
         senderRequest: {
           id,
@@ -28,6 +29,9 @@ export const Room = ({ roomID, roomName, roomAvatar, isPrivate, count, max, owne
           senderSocketId: socket.id,
         },
         receiverRequest: ownerID,
+      });
+      socket.on("rejected", () => {
+        setEmitJoin(false);
       });
     });
   }

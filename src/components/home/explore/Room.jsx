@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppState } from "../../../context";
-
+import Localbase from "localbase";
 let apiKey = process.env.VITE_API_KEY;
 
 export const Room = ({ roomID, roomName, roomAvatar, isPrivate, count, max, ownerID }) => {
@@ -56,8 +56,11 @@ export const Room = ({ roomID, roomName, roomAvatar, isPrivate, count, max, owne
           audio: true,
         })
         .then((myStream) => {
+          const db = new Localbase("ozroom");
           dispatch({ type: "setMyStream", payload: myStream });
-          navigate("/meeting");
+          db.delete().then(() => {
+            navigate(`/meeting?room=${ownerID}`);
+          });
         })
         .catch((err) => {
           console.log(err);

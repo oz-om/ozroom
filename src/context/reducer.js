@@ -41,8 +41,18 @@ function handelRequests(state, requestInfo) {
 }
 
 function handelControlledMembersTracks(controlledMembers, controlled) {
+  let controlledMember = controlledMembers.find((member) => member.id == controlled.id);
   let unUpdatedControlled = controlledMembers.filter((control) => control.id !== controlled.id);
-  return [...unUpdatedControlled, controlled];
+  if (!controlledMember) {
+    return [...unUpdatedControlled, controlled];
+  }
+  return [
+    ...unUpdatedControlled,
+    {
+      ...controlledMember,
+      ...controlled,
+    },
+  ];
 }
 
 export default function reducer(state, { type, payload }) {

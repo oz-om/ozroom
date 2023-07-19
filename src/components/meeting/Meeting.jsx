@@ -1,7 +1,7 @@
 import { Mirror } from "./Mirror";
 import { useNavigate } from "react-router-dom";
 import { useAppState } from "../../context";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useState } from "react";
 let apiKey = process.env.VITE_API_KEY;
 
 function Meeting({ accepterSocketId }) {
@@ -13,12 +13,21 @@ function Meeting({ accepterSocketId }) {
     audio: true,
   });
   const { id, username, avatar } = user;
+
+  useEffect(() => {
+    if (!myStream) {
+      navigate("/");
+    }
+  }, [myStream]);
   // receive call situation
   useEffect(() => {
     if (call) {
       call.answer(myStream);
       call
         .once("stream", (remoteStream) => {
+          socket.emit("joinToRoom", {
+            room: call.metadata.callerInfo.id,
+          });
           dispatch({
             type: "setMember",
             payload: {
@@ -121,6 +130,7 @@ function Meeting({ accepterSocketId }) {
     };
   }, []);
 
+  // controls functionality
   function handleAdminControlTracks(targetUser, controlledMembersTracks, getTracks, dispatchType) {
     let controlledMember = controlledMembersTracks.find((controlled) => controlled.id == targetUser.id);
     if (targetUser.id != user.id) {

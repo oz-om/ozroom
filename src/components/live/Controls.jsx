@@ -67,12 +67,6 @@ function RequestItem({ id, PeerId, socketId, avatar, name, time, state }) {
   }
   function setToPeers() {
     let peer = Peers.find((peer) => peer.id == id);
-    console.log(peer);
-    console.log({
-      id,
-      name,
-      socketId,
-    });
     if (!peer) {
       dispatch({
         type: "setPeers",
@@ -84,7 +78,7 @@ function RequestItem({ id, PeerId, socketId, avatar, name, time, state }) {
       });
     }
   }
-  function handleRequestDispatch(remoteStream) {
+  function handleRequestDispatch(remoteStream, room) {
     dispatch({
       type: "handelRequest",
       payload: {

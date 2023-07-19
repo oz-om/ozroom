@@ -11,7 +11,7 @@ const MeetingUi = memo(() => {
 
     const chatContent = document.querySelector(".chat-content-wrap");
     chatContent.classList.toggle("hidden");
-    chatContent.classList.toggle("grid");
+    chatContent.classList.toggle("flex");
   }
 
   function toggleRoomMange() {
@@ -33,7 +33,7 @@ const MeetingUi = memo(() => {
             <span>hat</span>
             <i className='bx bxs-conversation text-xl cursor-pointer'></i>
           </div>
-          <div className='chat-content-wrap hidden grid-cols-[20%_1fr] h-[calc(100%_-_28px)]'>
+          <div className='chat-content-wrap hidden h-[calc(100%_-_28px)]'>
             <Chat toggleChat={toggleChat} />
           </div>
         </div>

@@ -95,6 +95,9 @@
   .mirror_small_square {
     @apply relative w-24 h-24 rounded-md border basis-28 z-[1];
   }
+  .activeChat {
+    @apply bg-violet-900 after:content-[''] after:absolute after:-right-[5px] after:top-2/4 after:border-8 after:border-transparent after:border-r-violet-900;
+  }
 }
 
 .no-scrollbar::-webkit-scrollbar {

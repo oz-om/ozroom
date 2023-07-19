@@ -4,7 +4,7 @@ import { useAppState } from "../../context";
 import { useEffect, useState } from "react";
 let apiKey = process.env.VITE_API_KEY;
 
-export default function Meeting({ roomID, ownerID }) {
+export default function Meeting({ roomID }) {
   const navigate = useNavigate();
   let { user, dispatch, myStream, socket, members, Peers, controlledMembersFaces, controlledMembersAudios } = useAppState();
 
@@ -13,6 +13,12 @@ export default function Meeting({ roomID, ownerID }) {
     video: true,
     audio: true,
   });
+
+  useEffect(() => {
+    if (!myStream) {
+      navigate("/");
+    }
+  }, [myStream]);
 
   useEffect(() => {
     socket.on("requestIntegrationCalls", (sender) => {

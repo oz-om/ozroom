@@ -4,9 +4,10 @@ import { copyKey, getCreateRoomBlock, randomKey, textAreaAutoResize, uploadGetNe
 let apiKey = process.env.VITE_API_KEY;
 
 export const NewRoom = () => {
+  let randomAvatarName = new Date().getTime();
   const [room, setRoom] = useState({
     name: "",
-    avatar: "https://avatars.dicebear.com/api/bottts/ele.svg?background=%23425ACC",
+    avatar: `https://avatars.dicebear.com/api/bottts/${randomAvatarName}.svg?background=%23425ACC`,
     max: 2,
     isPrivate: false,
     private_key: null,
@@ -81,10 +82,11 @@ export const NewRoom = () => {
     }
   }
   function close() {
+    let randomAvatarName = new Date().getTime();
     // reset room
     setRoom({
       name: "",
-      avatar: "https://avatars.dicebear.com/api/bottts/ele.svg?background=%23425ACC",
+      avatar: `https://avatars.dicebear.com/api/bottts/${randomAvatarName}.svg?background=%23425ACC`,
       max: 2,
       isPrivate: false,
       private_key: null,

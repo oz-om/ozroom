@@ -32,16 +32,16 @@ export const Navbar = () => {
       <div className='wrapper flex justify-between shadow border-b-[1px] border-b-white/2 mb-2'>
         <div id='logo' className='w-36'>
           <Link to={"/explore"}>
-            <img src='https://svgshare.com/i/m9r.svg' alt='logo' />
+            <img src='https://svgshare.com/i/vee.svg' alt='logo' />
           </Link>
         </div>
         {loggedIn && (
           <div id='user-info' className='relative grid place-content-center'>
-            <div id='profile' onClick={toggleMenu} className='w-12 h-12 rounded-full overflow-hidden cursor-pointer'>
+            <div id='profile' onClick={toggleMenu} className='w-9 h-9 rounded-full overflow-hidden cursor-pointer'>
               <img src={user.avatar} alt='user avatar' />
             </div>
-            <ul id='menu' className='absolute top-full right-0 bg-indigo-300 w-36 border border-indigo-400 rounded topArrow hidden z-10'>
-              <li>
+            <ul id='menu' className='absolute top-full right-0 backdrop-blur w-36 border border-indigo-400 rounded topArrow hidden z-10'>
+              <li onClick={toggleMenu}>
                 <Link to={"/profile"} className='link'>
                   view profile
                 </Link>

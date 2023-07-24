@@ -43,11 +43,11 @@
 
 @layer components {
   .topArrow {
-    @apply before:border-8 before:border-transparent before:border-b-indigo-300
-    before:w-4 before:h-4 before:absolute before:bottom-full before:left-28;
+    @apply before:border-8 before:border-transparent before:border-b-[#8e8bbb]
+    before:w-4 before:h-4 before:absolute before:bottom-full before:left-[117px];
   }
   .link {
-    @apply px-2 py-1 m-1 border rounded block bg-indigo-600 hover:bg-indigo-500 cursor-pointer;
+    @apply px-2 py-1 m-1 rounded block  hover:bg-indigo-500 cursor-pointer;
   }
   .wrapper {
     @apply sm:max-w-[590px] md:max-w-[690px] 2md:max-w-[890px] lg:max-w-[970px] xl:max-w-[1160px] 2xl:max-w-[1380px] mx-auto;

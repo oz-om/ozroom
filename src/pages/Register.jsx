@@ -9,6 +9,7 @@ export default function Register() {
     user: "",
     pass: "",
   });
+  const [defaultCountry, setDefaultCountry] = useState("morocco");
 
   useEffect(() => {
     if (loggedIn) {
@@ -20,16 +21,26 @@ export default function Register() {
     let data = input.target;
     setUserData((prev) => ({ ...prev, [data.name]: data.value }));
   }
+  useEffect(() => {
+    fetch("https://ipapi.co/json/")
+      .then(function (response) {
+        response.json().then((jsonData) => {
+          setDefaultCountry(jsonData.country_name);
+        });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }, []);
 
   async function authRegister() {
     let apiKey = process.env.VITE_API_KEY;
-
     let req = await fetch(`${apiKey}/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(user),
+      body: JSON.stringify({ ...user, country: defaultCountry }),
       credentials: "include",
     });
     let res = await req.json();

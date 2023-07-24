@@ -1,7 +1,7 @@
 let apiKey = process.env.VITE_API_KEY;
 
-export async function fetchRooms() {
-  let req = await fetch(`${apiKey}/get_rooms`, {
+export async function fetchRooms(currentPage, limit) {
+  let req = await fetch(`${apiKey}/get_rooms?currentPage=${currentPage}&limit=${limit}`, {
     headers: { "Content-Type": "application/json" },
     credentials: "include",
   });
@@ -9,7 +9,10 @@ export async function fetchRooms() {
   if (!res.getRooms) {
     return ["error"];
   }
-  return res.rooms;
+  return {
+    rooms: res.rooms,
+    total: res.totalRooms,
+  };
 }
 
 export async function fetchMyRooms() {
@@ -61,6 +64,8 @@ export default function reducer(state, { type, payload }) {
       return { ...state, loggedIn: true, user: payload };
     case "logout":
       return { ...state, loggedIn: false, user: {}, myRooms: [], rooms: [] };
+    case "updateUserInfo":
+      return { ...state, user: { ...state.user, ...payload } };
     case "addNewRoom":
       return { ...state, myRooms: [...state.myRooms, payload] };
     case "fetchRooms":

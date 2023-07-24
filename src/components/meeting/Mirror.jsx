@@ -42,13 +42,15 @@ export function Mirror({ isFullScreen, muted, stream, ownerStreamName, ownerStre
       return mirror.classList.contains("mirror_full_screen");
     });
 
-    fullScreenMirror[0].classList.remove("mirror_full_screen");
-    fullScreenMirror[0].classList.add("mirror_small_square");
+    if (fullScreenMirror.length) {
+      fullScreenMirror[0].classList.remove("mirror_full_screen");
+      fullScreenMirror[0].classList.add("mirror_small_square");
 
-    fullScreenMirror[0].querySelector(".mirror_name").classList.remove("text-center", "left-0", "right-0");
-    fullScreenMirror[0].querySelector(".mirror_name").classList.add("bottom-0", "font-light", "text-xs");
-    fullScreenMirror[0].querySelector(".mirror_details").classList.remove("top-8");
-    fullScreenMirror[0].querySelector(".mirror_details").classList.add("bottom-0", "font-light", "text-xs");
+      fullScreenMirror[0].querySelector(".mirror_name").classList.remove("text-center", "left-0", "right-0");
+      fullScreenMirror[0].querySelector(".mirror_name").classList.add("bottom-0", "font-light", "text-xs");
+      fullScreenMirror[0].querySelector(".mirror_details").classList.remove("top-8");
+      fullScreenMirror[0].querySelector(".mirror_details").classList.add("bottom-0", "font-light", "text-xs");
+    }
 
     let targetMirror = e.target.parentElement.parentElement;
 

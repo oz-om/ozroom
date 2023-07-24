@@ -35,6 +35,7 @@ export const Room = ({ id, roomName, roomAvatar, topic, desc, isPrivate, max, ow
         .then((myStream) => {
           const db = new Localbase("ozroom");
           dispatch({ type: "setMyStream", payload: myStream });
+          console.log(db.dbName);
           db.delete().then(() => {
             navigate(`/live?in=${ownerID}&room=${id}`);
           });

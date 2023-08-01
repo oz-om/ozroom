@@ -2,34 +2,33 @@ import ava_1 from "../../assets/images/ava_1.png";
 import ava_2 from "../../assets/images/ava_2.png";
 import ava_3 from "../../assets/images/ava_3.png";
 import ava_4 from "../../assets/images/ava_4.png";
-import { textAreaAutoResize } from "../global/index";
-import Localbase from "localbase";
 import { useEffect, useRef, useState } from "react";
 import { useAppState } from "../../context";
+import { textAreaAutoResize } from "../global/index";
+import localForage from "localforage";
 
 export default function Chat({ toggleChat }) {
-  const { current: db } = useRef(new Localbase("ozroom"));
   const messageAria = useRef();
   const { socket, user } = useAppState();
   const [messages, setMessages] = useState([]);
   const [activeChat, setActiveChat] = useState("group");
   const [messagesStatus, setMessagesStatus] = useState(false);
   const [specialChat, setSpecialChat] = useState([]);
-  db.config.debug = false;
 
-  useEffect(() => {
-    db.collection(`${activeChat}_messages`)?.delete();
-    return () => {
-      db.collection(`${activeChat}_messages`)?.delete();
-    };
-  }, []);
-
+  function addNewMessageToDB(chat_name, msg) {
+    let collection = localForage.createInstance({
+      driver: localForage.INDEXEDDB,
+      name: "ozroom",
+      storeName: `${chat_name}_messages`,
+    });
+    collection.setItem(Date.now(), msg);
+  }
   useEffect(() => {
     socket.on("receive_msg", (msg) => {
       if (msg.to == "group") {
-        db.collection(`${msg.to}_messages`).add(msg);
+        addNewMessageToDB(msg.to, msg);
       } else {
-        db.collection(`${msg.to.id}_messages`).add(msg);
+        addNewMessageToDB(msg.to.id, msg);
       }
       setMessagesStatus((prev) => !prev);
     });
@@ -41,20 +40,27 @@ export default function Chat({ toggleChat }) {
   function handleChat() {
     setActiveChat("group");
   }
+  function getMessagesFromDB(chat) {
+    setMessages([]);
+    let allMessages = [];
+    let collection = localForage.createInstance({
+      driver: localForage.INDEXEDDB,
+      name: "ozroom",
+      storeName: chat,
+    });
+    const getRequest = collection.iterate((value) => {
+      allMessages.push(value);
+    });
+    getRequest.then(() => {
+      setMessages(allMessages);
+    });
+  }
 
   useEffect(() => {
     if (activeChat == "group") {
-      db.collection("group_messages")
-        .get()
-        .then((messages) => {
-          setMessages(messages);
-        });
+      getMessagesFromDB("group_messages");
     } else {
-      db.collection(`${activeChat.id}_messages`)
-        .get()
-        .then((messages) => {
-          setMessages(messages);
-        });
+      getMessagesFromDB(`${activeChat.id}_messages`);
     }
   }, [activeChat, messagesStatus]);
 
@@ -72,9 +78,9 @@ export default function Chat({ toggleChat }) {
         socketId: socket.id,
       };
       if (activeChat == "group") {
-        db.collection("group_messages").add(myMessage);
+        addNewMessageToDB("group", myMessage);
       } else {
-        db.collection(`${activeChat.id}_messages`).add(myMessage);
+        addNewMessageToDB(activeChat.id, myMessage);
       }
       socket.emit("sendMessage", myMessage);
       setMessagesStatus((prev) => !prev);

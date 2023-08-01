@@ -5,12 +5,10 @@ import ava_3 from "../../assets/images/ava_3.png";
 import ava_4 from "../../assets/images/ava_4.png";
 import { useAppState } from "../../context";
 import { textAreaAutoResize } from "../global/index";
-import Localbase from "localbase";
+import localForage from "localforage";
 import { useLocation } from "react-router-dom";
 
 export default function Chat({ toggleChat }) {
-  const { current: db } = useRef(new Localbase("ozroom"));
-  db.config.debug = false;
   const messageAria = useRef();
   const { socket, user } = useAppState();
   const [activeChat, setActiveChat] = useState("group");
@@ -23,14 +21,14 @@ export default function Chat({ toggleChat }) {
   function handleChat() {
     setActiveChat("group");
   }
-
-  useEffect(() => {
-    db.collection(`${activeChat}_messages`)?.delete();
-    return () => {
-      db.collection(`${activeChat}_messages`)?.delete();
-    };
-  }, []);
-
+  function addNewMessageToDB(chat_name, msg) {
+    let collection = localForage.createInstance({
+      driver: localForage.INDEXEDDB,
+      name: "ozroom",
+      storeName: chat_name,
+    });
+    collection.setItem(Date.now(), msg);
+  }
   function sendMessage() {
     const { id, avatar, username } = user;
     if (messageAria.current.value.trim().length !== 0) {
@@ -45,9 +43,9 @@ export default function Chat({ toggleChat }) {
         socketId: socket.id,
       };
       if (activeChat == "group") {
-        db.collection(`${activeChat}_messages`).add(myMessage);
+        addNewMessageToDB(`${activeChat}_messages`, myMessage);
       } else {
-        db.collection(`${activeChat.id}_messages`).add(myMessage);
+        addNewMessageToDB(`${activeChat.id}_messages`, myMessage);
       }
       socket.emit("sendMessage", myMessage);
       messageAria.current.value = "";
@@ -58,9 +56,9 @@ export default function Chat({ toggleChat }) {
   useEffect(() => {
     socket.on("receive_msg", (msg) => {
       if (msg.to == "group") {
-        db.collection(`group_messages`).add(msg);
+        addNewMessageToDB(`group_messages`, msg);
       } else {
-        db.collection(`${msg.to.id}_messages`).add(msg);
+        addNewMessageToDB(`${msg.to.id}_messages`, msg);
         setSpecialChat([
           {
             id: msg.id,
@@ -77,19 +75,27 @@ export default function Chat({ toggleChat }) {
     };
   }, []);
 
+  function getMessagesFromDB(chat) {
+    setMessages([]);
+    let allMessages = [];
+    let collection = localForage.createInstance({
+      driver: localForage.INDEXEDDB,
+      name: "ozroom",
+      storeName: chat,
+    });
+    const getRequest = collection.iterate((value) => {
+      allMessages.push(value);
+    });
+    getRequest.then(() => {
+      setMessages(allMessages);
+    });
+  }
+
   useEffect(() => {
     if (activeChat == "group") {
-      db.collection(`${activeChat}_messages`)
-        .get()
-        .then((msgs) => {
-          setMessages(msgs);
-        });
+      getMessagesFromDB(`${activeChat}_messages`);
     } else {
-      db.collection(`${activeChat.id}_messages`)
-        .get()
-        .then((msgs) => {
-          setMessages(msgs);
-        });
+      getMessagesFromDB(`${activeChat.id}_messages`);
     }
   }, [activeChat, messagesStatus]);
 

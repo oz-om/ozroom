@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppState } from "../../../context";
-import Localbase from "localbase";
 let apiKey = process.env.VITE_API_KEY;
 
-export const Room = ({ roomID, roomName, roomAvatar, isPrivate, count, max, ownerID }) => {
+export const Room = memo(({ roomID, roomName, roomAvatar, isPrivate, count, max, ownerID }) => {
   const { dispatch, user, myPeerId, socket, call } = useAppState();
   const navigate = useNavigate();
   const { id, username, avatar } = user;
+  const [callRequest, setCallRequest] = useState(false);
   const [emitJoin, setEmitJoin] = useState(false);
   async function handleJoin() {
     isRoomOnline().then((res) => {
@@ -30,6 +30,7 @@ export const Room = ({ roomID, roomName, roomAvatar, isPrivate, count, max, owne
         },
         receiverRequest: ownerID,
       });
+      setCallRequest((prev) => !prev);
       socket.on("rejected", () => {
         setEmitJoin(false);
       });
@@ -49,18 +50,21 @@ export const Room = ({ roomID, roomName, roomAvatar, isPrivate, count, max, owne
   }
 
   useEffect(() => {
-    if (call) {
+    if (call && callRequest) {
       navigator.mediaDevices
         .getUserMedia({
           video: true,
           audio: true,
         })
         .then((myStream) => {
-          const db = new Localbase("ozroom");
           dispatch({ type: "setMyStream", payload: myStream });
-          db.delete().then(() => {
+          const DBDeleteRequest = indexedDB.deleteDatabase("ozroom");
+          DBDeleteRequest.onerror = () => {
+            console.error("Error deleting database.");
+          };
+          DBDeleteRequest.onsuccess = () => {
             navigate(`/meeting?room=${ownerID}`);
-          });
+          };
         })
         .catch((err) => {
           console.log(err);
@@ -94,4 +98,4 @@ export const Room = ({ roomID, roomName, roomAvatar, isPrivate, count, max, owne
       </div>
     </div>
   );
-};
+});

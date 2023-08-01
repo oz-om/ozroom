@@ -1,7 +1,6 @@
 import { useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppState } from "../../../context";
-import Localbase from "localbase";
 let apiKey = process.env.VITE_API_KEY;
 
 export const Room = ({ id, roomName, roomAvatar, topic, desc, isPrivate, max, ownerID }) => {
@@ -33,12 +32,15 @@ export const Room = ({ id, roomName, roomAvatar, topic, desc, isPrivate, max, ow
           video: true,
         })
         .then((myStream) => {
-          const db = new Localbase("ozroom");
           dispatch({ type: "setMyStream", payload: myStream });
-          console.log(db.dbName);
-          db.delete().then(() => {
+          const DBDeleteRequest = indexedDB.deleteDatabase("ozroom");
+          DBDeleteRequest.onerror = () => {
+            console.error("Error deleting database.");
+          };
+
+          DBDeleteRequest.onsuccess = () => {
             navigate(`/live?in=${ownerID}&room=${id}`);
-          });
+          };
         })
         .catch((err) => {
           console.log(err);

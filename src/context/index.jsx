@@ -25,6 +25,7 @@ export const StateProvider = ({ children }) => {
     controlledMembersAudios: [],
   };
   const [state, dispatch] = useReducer(reducer, appState);
+
   useEffect(() => {
     socket.emit("initRoom", state.user.id);
     if (state.user.id) {

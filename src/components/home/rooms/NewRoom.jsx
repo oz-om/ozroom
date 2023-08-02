@@ -15,6 +15,7 @@ export const NewRoom = () => {
     description: "",
   });
   const { dispatch } = useAppState();
+  const [loading, setLoading] = useState(false);
 
   function imagePreview(e) {
     let img = document.querySelector("#cover img");
@@ -66,6 +67,7 @@ export const NewRoom = () => {
 
   async function createRoom() {
     if (room.name.trim().length && room.topic.trim().length && room.description.trim().length) {
+      setLoading(true);
       let req = await fetch(`${apiKey}/create_room`, {
         method: "POST",
         headers: {
@@ -78,6 +80,7 @@ export const NewRoom = () => {
       if (res.createRoom) {
         dispatch({ type: "addNewRoom", payload: { ...room, id: res.roomId } });
         close();
+        setLoading(false);
       }
     }
   }
@@ -193,7 +196,7 @@ export const NewRoom = () => {
           ></textarea>
         </div>
         <button className='w-36 bg-pink-500/75 py-2 px-4 mx-auto my-4 rounded-md block' onClick={createRoom}>
-          create room
+          {loading ? <i className='bx bx-loader bx-spin'></i> : "create room"}
         </button>
       </div>
     </div>

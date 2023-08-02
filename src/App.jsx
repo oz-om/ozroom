@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/global/Navbar";
@@ -27,6 +28,8 @@ function App() {
       let res = await req.json();
       if (res.loggedIn) {
         dispatch({ type: "login", payload: res.user });
+      } else {
+        dispatch({ type: "logout", payload: res.user });
       }
     }
     initServer();

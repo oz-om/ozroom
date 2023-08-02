@@ -71,7 +71,7 @@ export default function Profile() {
   }
 
   return (
-    <div id='profile' className='px-4 h-[calc(100vh_-_50px)] overflow-y-auto'>
+    <div id='profile' className='px-4overflow-y-auto'>
       <div className='grid place-content-center p-3'>
         <img id='profile_img' src={userInfo.avatar} alt='photo profile' className='w-36 h-36 border-4 border-indigo-50 rounded-full' />
         <div id='change'>

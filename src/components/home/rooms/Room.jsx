@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppState } from "../../../context";
@@ -7,8 +8,11 @@ export const Room = ({ id, roomName, roomAvatar, topic, desc, isPrivate, max, ow
   let { dispatch, Peer } = useAppState();
   const navigate = useNavigate();
   let deleteBtn = useRef(null);
+  const [reviveLoading, setReviveLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   async function initRoom(id) {
+    setReviveLoading(true);
     let req = await fetch(`${apiKey}/init_room`, {
       method: "POST",
       headers: {
@@ -24,6 +28,7 @@ export const Room = ({ id, roomName, roomAvatar, topic, desc, isPrivate, max, ow
     initRoom(id).then((res) => {
       if (!res.initRoom) {
         console.log(res.err);
+        setReviveLoading(false);
         return;
       }
       navigator.mediaDevices
@@ -32,6 +37,7 @@ export const Room = ({ id, roomName, roomAvatar, topic, desc, isPrivate, max, ow
           video: true,
         })
         .then((myStream) => {
+          setReviveLoading(false);
           dispatch({ type: "setMyStream", payload: myStream });
           const DBDeleteRequest = indexedDB.deleteDatabase("ozroom");
           DBDeleteRequest.onerror = () => {
@@ -49,6 +55,7 @@ export const Room = ({ id, roomName, roomAvatar, topic, desc, isPrivate, max, ow
   }
   async function deleteRoom() {
     let roomID = deleteBtn.current.dataset.roomid;
+    setDeleteLoading(true);
     let req = await fetch(`${apiKey}/delete_room`, {
       method: "POST",
       headers: {
@@ -61,7 +68,9 @@ export const Room = ({ id, roomName, roomAvatar, topic, desc, isPrivate, max, ow
     let res = await req.json();
     if (res.deleteRoom) {
       dispatch({ type: "deleteRoom", payload: roomID });
+      setDeleteLoading(false);
     } else {
+      setDeleteLoading(false);
       console.log(res);
     }
   }
@@ -91,8 +100,14 @@ export const Room = ({ id, roomName, roomAvatar, topic, desc, isPrivate, max, ow
         <div id='controls'>
           <div className='flex flex-wrap gap-x-4'>
             <div onClick={handleRevive} id='revive' className='flex grow items-center justify-center gap-x-1 bg-green-600 pl-1 pr-4 py-1 rounded-md cursor-pointer hover:bg-green-500'>
-              <i className='bx bxs-leaf'></i>
-              <span>revive</span>
+              {reviveLoading ? (
+                <i className='bx bx-loader bx-spin'></i>
+              ) : (
+                <>
+                  <i className='bx bxs-leaf'></i>
+                  <span>revive</span>
+                </>
+              )}
             </div>
             <Link to={`edit?room=${id}`} id='edit' className='flex grow items-center justify-center gap-x-1 bg-sky-500 pl-1 pr-4 py-1 rounded-md cursor-pointer hover:bg-sky-700'>
               <i className='bx bx-cog'></i>
@@ -100,8 +115,14 @@ export const Room = ({ id, roomName, roomAvatar, topic, desc, isPrivate, max, ow
             </Link>
           </div>
           <div id='delete' data-roomid={id} onClick={deleteRoom} ref={deleteBtn} className='flex justify-center items-center gap-x-1 py-2 mt-2 rounded-md bg-red-500 cursor-pointer hover:bg-red-400'>
-            <i className='bx bx-trash'></i>
-            <span>delete</span>
+            {deleteLoading ? (
+              <i className='bx bx-loader bx-spin'></i>
+            ) : (
+              <>
+                <i className='bx bx-trash'></i>
+                <span>delete</span>
+              </>
+            )}
           </div>
         </div>
       </div>

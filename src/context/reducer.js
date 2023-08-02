@@ -61,9 +61,25 @@ function handelControlledMembersTracks(controlledMembers, controlled) {
 export default function reducer(state, { type, payload }) {
   switch (type) {
     case "login":
-      return { ...state, loggedIn: true, user: payload };
+      return {
+        ...state,
+        loggedIn: {
+          state: true,
+          waiting: false,
+        },
+        user: payload,
+      };
     case "logout":
-      return { ...state, loggedIn: false, user: {}, myRooms: [], rooms: [] };
+      return {
+        ...state,
+        loggedIn: {
+          state: false,
+          waiting: false,
+        },
+        user: {},
+        myRooms: [],
+        rooms: [],
+      };
     case "updateUserInfo":
       return { ...state, user: { ...state.user, ...payload } };
     case "addNewRoom":

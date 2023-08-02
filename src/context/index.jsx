@@ -10,7 +10,10 @@ const socket = io(apiKey);
 export const StateProvider = ({ children }) => {
   const Peer = new initPeer();
   const appState = {
-    loggedIn: false,
+    loggedIn: {
+      state: false,
+      waiting: true,
+    },
     user: {},
     rooms: [],
     myRooms: [],

@@ -35,7 +35,7 @@ export const Navbar = () => {
             <img src='https://svgshare.com/i/vee.svg' alt='logo' />
           </Link>
         </div>
-        {loggedIn && (
+        {loggedIn.state && (
           <div id='user-info' className='relative grid place-content-center'>
             <div id='profile' onClick={toggleMenu} className='w-9 h-9 rounded-full overflow-hidden cursor-pointer'>
               <img src={user.avatar} alt='user avatar' />
@@ -52,7 +52,7 @@ export const Navbar = () => {
             </ul>
           </div>
         )}
-        {!loggedIn && (
+        {!loggedIn.state && (
           <div className='grid place-content-center text-3xl text-pink-500'>
             <Link to={"/register"}>
               <i className='bx bxs-log-in-circle'></i>

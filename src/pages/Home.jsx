@@ -4,6 +4,7 @@ import { Rooms } from "../components/home/Rooms";
 import { SearchBar } from "../components/home/SearchBar";
 import { SideToggle } from "../components/home/SideToggle";
 import { useAppState } from "../context";
+import { Loader } from "../components/global/Loader";
 
 function Home() {
   const { loggedIn } = useAppState();
@@ -11,9 +12,9 @@ function Home() {
   const location = useLocation();
 
   useEffect(() => {
-    if (!loggedIn) {
+    if (!loggedIn.state && !loggedIn.waiting) {
       navigate("/login");
-    } else if (location.pathname === "/") {
+    } else if (location.pathname === "/" && loggedIn.state && !loggedIn.waiting) {
       navigate("/explore");
     } else {
       navigate(location.pathname);
@@ -21,8 +22,8 @@ function Home() {
   }, [loggedIn]);
 
   return (
-    <section className='min-h-[calc(100vh_-_70px)]'>
-      {loggedIn && (
+    <section>
+      {!loggedIn.waiting ? (
         <>
           <div className=' wrapper grid'>
             {(location.pathname === "/rooms" || location.pathname === "/explore") && (
@@ -34,6 +35,8 @@ function Home() {
             <Rooms />
           </div>
         </>
+      ) : (
+        <Loader />
       )}
     </section>
   );

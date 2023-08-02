@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
+import { Loader } from "./components/global/Loader";
 import { Navbar } from "./components/global/Navbar";
 import { useAppState } from "./context";
 const apiKey = process.env.VITE_API_KEY;
@@ -38,7 +39,13 @@ function App() {
   return (
     <>
       <Navbar />
-      <Suspense fallback={<div className='h-screen'>loading...</div>}>
+      <Suspense
+        fallback={
+          <div className='h-screen'>
+            <Loader />
+          </div>
+        }
+      >
         <Routes>
           <Route path='/' element={<Home />}>
             <Route path='explore' element={<Explore />} />
